@@ -1,0 +1,141 @@
+Path Name,Description,Step No,Step Title,XP Reward
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,1,Computer Fundamentals,50
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,2,Networking Fundamentals,75
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,3,Linux Fundamentals,75
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,4,Cybersecurity Fundamentals,100
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,5,Operating System Security,100
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,6,Networking Security,100
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,7,Command Line & Shell Basics,75
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,8,Python for Cybersecurity,100
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,9,Cryptography Fundamentals,100
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,10,Identity & Access Management,100
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,11,Web Security Fundamentals,100
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,12,Authentication & Authorization Security,100
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,13,Input Validation & Common Web Vulnerabilities,125
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,14,Security Monitoring & Logging,100
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,15,Vulnerability Assessment,125
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,16,Security Testing & Practical Labs,150
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,17,Incident Response Fundamentals,125
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,18,Security Operations & SIEM Basics,150
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,19,Cybersecurity Projects & Portfolio,200
+Cybersecurity,Build foundational and practical skills for a career in cybersecurity,20,Career Preparation & Job Readiness,200
+Web Development,Build practical skills for a career in web development,1,HTML Fundamentals,50
+Web Development,Build practical skills for a career in web development,2,CSS Fundamentals,75
+Web Development,Build practical skills for a career in web development,3,Responsive Web Design,75
+Web Development,Build practical skills for a career in web development,4,JavaScript Fundamentals,100
+Web Development,Build practical skills for a career in web development,5,DOM Manipulation,100
+Web Development,Build practical skills for a career in web development,6,JavaScript Events & Forms,100
+Web Development,Build practical skills for a career in web development,7,Git & GitHub Basics,100
+Web Development,Build practical skills for a career in web development,8,Frontend Development Fundamentals,125
+Web Development,Build practical skills for a career in web development,9,React Fundamentals,125
+Web Development,Build practical skills for a career in web development,10,React Components & State,125
+Web Development,Build practical skills for a career in web development,11,Backend Development Fundamentals,125
+Web Development,Build practical skills for a career in web development,12,REST APIs,125
+Web Development,Build practical skills for a career in web development,13,Database Fundamentals,100
+Web Development,Build practical skills for a career in web development,14,Authentication & Authorization,125
+Web Development,Build practical skills for a career in web development,15,Backend Framework Fundamentals,150
+Web Development,Build practical skills for a career in web development,16,Full-Stack Integration,150
+Web Development,Build practical skills for a career in web development,17,Web Security Fundamentals,125
+Web Development,Build practical skills for a career in web development,18,Testing & Debugging,125
+Web Development,Build practical skills for a career in web development,19,Deployment & Hosting,150
+Web Development,Build practical skills for a career in web development,20,Full-Stack Web Development Project,200
+Data Science,Build practical skills for a career in data science,1,Python Fundamentals,50
+Data Science,Build practical skills for a career in data science,2,NumPy Fundamentals,75
+Data Science,Build practical skills for a career in data science,3,Pandas Fundamentals,100
+Data Science,Build practical skills for a career in data science,4,Data Cleaning & Preprocessing,100
+Data Science,Build practical skills for a career in data science,5,Exploratory Data Analysis,100
+Data Science,Build practical skills for a career in data science,6,Data Visualization,100
+Data Science,Build practical skills for a career in data science,7,Statistics Fundamentals,125
+Data Science,Build practical skills for a career in data science,8,Probability Fundamentals,125
+Data Science,Build practical skills for a career in data science,9,SQL Fundamentals,100
+Data Science,Build practical skills for a career in data science,10,Feature Engineering,125
+Data Science,Build practical skills for a career in data science,11,Machine Learning Fundamentals,150
+Data Science,Build practical skills for a career in data science,12,Supervised Learning,150
+Data Science,Build practical skills for a career in data science,13,Unsupervised Learning,150
+Data Science,Build practical skills for a career in data science,14,Model Evaluation,125
+Data Science,Build practical skills for a career in data science,15,Scikit-learn Fundamentals,125
+Data Science,Build practical skills for a career in data science,16,Deep Learning Fundamentals,175
+Data Science,Build practical skills for a career in data science,17,Natural Language Processing,150
+Data Science,Build practical skills for a career in data science,18,Data Science Projects,150
+Data Science,Build practical skills for a career in data science,19,Model Deployment,175
+Data Science,Build practical skills for a career in data science,20,Data Science Portfolio Project,200
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,1,Python for AI,50
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,2,NumPy & Pandas,75
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,3,Mathematics for Machine Learning,100
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,4,Statistics & Probability,100
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,5,Data Preprocessing,100
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,6,Exploratory Data Analysis,100
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,7,Supervised Learning,125
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,8,Unsupervised Learning,125
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,9,Feature Engineering,125
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,10,Model Evaluation,125
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,11,Scikit-learn,125
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,12,Neural Networks,150
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,13,Deep Learning,150
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,14,Computer Vision,150
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,15,Natural Language Processing,150
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,16,Generative AI Fundamentals,175
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,17,LLM Fundamentals,175
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,18,Model Deployment,175
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,19,AI Project,200
+AI & Machine Learning,Build practical skills for a career in artificial intelligence and machine learning,20,AI Portfolio Project,250
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",1,Linux Fundamentals,50
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",2,Networking Fundamentals,75
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",3,Git & GitHub,75
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",4,Shell Scripting,100
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",5,Cloud Computing Fundamentals,100
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",6,AWS / Cloud Platform Fundamentals,125
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",7,Virtual Machines & Containers,125
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",8,Docker Fundamentals,150
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",9,CI/CD Fundamentals,150
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",10,Infrastructure as Code,150
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",11,Cloud Networking & Security,150
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",12,Cloud Storage & Databases,125
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",13,Kubernetes Fundamentals,175
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",14,Monitoring & Logging,150
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",15,DevOps Automation,175
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",16,Deployment Strategies,150
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",17,Cloud Cost & Resource Management,125
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",18,DevOps Security,150
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",19,Cloud / DevOps Project,200
+Cloud & DevOps,"Build practical skills for cloud infrastructure, automation and DevOps",20,Cloud Deployment Portfolio Project,250
+Mobile Development,Build practical skills for a career in mobile application development,1,Programming Fundamentals,50
+Mobile Development,Build practical skills for a career in mobile application development,2,Object-Oriented Programming,75
+Mobile Development,Build practical skills for a career in mobile application development,3,Mobile App Development Fundamentals,75
+Mobile Development,Build practical skills for a career in mobile application development,4,User Interface Design for Mobile,100
+Mobile Development,Build practical skills for a career in mobile application development,5,Mobile Layouts & Navigation,100
+Mobile Development,Build practical skills for a career in mobile application development,6,State Management,100
+Mobile Development,Build practical skills for a career in mobile application development,7,APIs & HTTP Fundamentals,100
+Mobile Development,Build practical skills for a career in mobile application development,8,Local Storage & Databases,125
+Mobile Development,Build practical skills for a career in mobile application development,9,Authentication in Mobile Apps,125
+Mobile Development,Build practical skills for a career in mobile application development,10,Asynchronous Programming,125
+Mobile Development,Build practical skills for a career in mobile application development,11,REST API Integration,125
+Mobile Development,Build practical skills for a career in mobile application development,12,Notifications & Device Features,125
+Mobile Development,Build practical skills for a career in mobile application development,13,Mobile App Security,150
+Mobile Development,Build practical skills for a career in mobile application development,14,Testing & Debugging Mobile Apps,150
+Mobile Development,Build practical skills for a career in mobile application development,15,App Performance Optimization,150
+Mobile Development,Build practical skills for a career in mobile application development,16,Cross-Platform Development,150
+Mobile Development,Build practical skills for a career in mobile application development,17,App Deployment & Publishing,175
+Mobile Development,Build practical skills for a career in mobile application development,18,Mobile App Architecture,175
+Mobile Development,Build practical skills for a career in mobile application development,19,Mobile Application Project,200
+Mobile Development,Build practical skills for a career in mobile application development,20,Mobile App Portfolio Project,250
+UI/UX Design,Build practical skills for a career in user interface and user experience design,1,Design Fundamentals,50
+UI/UX Design,Build practical skills for a career in user interface and user experience design,2,Color Theory,75
+UI/UX Design,Build practical skills for a career in user interface and user experience design,3,Typography Fundamentals,75
+UI/UX Design,Build practical skills for a career in user interface and user experience design,4,Layout & Composition,100
+UI/UX Design,Build practical skills for a career in user interface and user experience design,5,Visual Hierarchy,100
+UI/UX Design,Build practical skills for a career in user interface and user experience design,6,User Research Fundamentals,100
+UI/UX Design,Build practical skills for a career in user interface and user experience design,7,User Personas & User Journeys,100
+UI/UX Design,Build practical skills for a career in user interface and user experience design,8,Information Architecture,125
+UI/UX Design,Build practical skills for a career in user interface and user experience design,9,Wireframing,100
+UI/UX Design,Build practical skills for a career in user interface and user experience design,10,Prototyping,125
+UI/UX Design,Build practical skills for a career in user interface and user experience design,11,Figma Fundamentals,125
+UI/UX Design,Build practical skills for a career in user interface and user experience design,12,Design Systems,150
+UI/UX Design,Build practical skills for a career in user interface and user experience design,13,Responsive Design,125
+UI/UX Design,Build practical skills for a career in user interface and user experience design,14,Accessibility Fundamentals,125
+UI/UX Design,Build practical skills for a career in user interface and user experience design,15,Usability Testing,150
+UI/UX Design,Build practical skills for a career in user interface and user experience design,16,Interaction Design,150
+UI/UX Design,Build practical skills for a career in user interface and user experience design,17,Design Handoff & Developer Collaboration,150
+UI/UX Design,Build practical skills for a career in user interface and user experience design,18,UX Case Study Development,175
+UI/UX Design,Build practical skills for a career in user interface and user experience design,19,UI/UX Design Project,200
+UI/UX Design,Build practical skills for a career in user interface and user experience design,20,UI/UX Portfolio Project,250
