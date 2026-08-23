@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
@@ -23,14 +24,16 @@ class RegisterController extends Controller
             'password' => ['required', 'confirmed'],
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'onboarding_completed' => false,
         ]);
 
-        return redirect()
-            ->route('login')
-            ->with('success', 'Registration successful. Please log in.');
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('onboarding.show');
     }
 }

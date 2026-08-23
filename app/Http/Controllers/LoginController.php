@@ -31,6 +31,14 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        if ($request->user()->isAdmin()) {
+            return redirect('/admin');
+        }
+
+        if (! $request->user()->hasCompletedOnboarding()) {
+            return redirect()->route('onboarding.show');
+        }
+
         return redirect()->intended('/dashboard');
     }
 
