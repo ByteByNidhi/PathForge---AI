@@ -38,4 +38,10 @@ return [
         'timeout' => (int) env('GEMINI_TIMEOUT', 45),
     ],
 
+    'himalayas' => [
+        'base_url' => env('HIMALAYAS_API_BASE_URL', 'https://himalayas.app/jobs/api/search'),
+        'timeout' => (int) env('HIMALAYAS_TIMEOUT', 15),
+        'max_results' => (int) env('HIMALAYAS_MAX_RESULTS', 10),
+    ],
+
 ];

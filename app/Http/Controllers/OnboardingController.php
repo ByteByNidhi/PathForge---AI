@@ -33,7 +33,35 @@ class OnboardingController extends Controller
             'path_id' => ['required', 'integer', 'exists:learning_paths,id'],
         ]);
 
-        $request->session()->put('onboarding.path_id', (int) $validated['path_id']);
+        $pathId = (int) $validated['path_id'];
+        $previousPathId = (int) $request->session()->get('onboarding.path_id', 0);
+
+        if ($previousPathId !== 0 && $previousPathId !== $pathId) {
+            $request->session()->forget(['onboarding.skill_ids', 'onboarding.starting_as']);
+        }
+
+        $request->session()->put('onboarding.path_id', $pathId);
+
+        return redirect()->route('onboarding.skills');
+    }
+
+    public function storeStartingPoint(Request $request): RedirectResponse
+    {
+        if (! $this->selectedPath($request)) {
+            return redirect()->route('onboarding.show');
+        }
+
+        $validated = $request->validate([
+            'starting_as' => ['required', 'in:experienced,beginner'],
+        ]);
+
+        $request->session()->put('onboarding.starting_as', $validated['starting_as']);
+
+        if ($validated['starting_as'] === 'beginner') {
+            $request->session()->put('onboarding.skill_ids', []);
+
+            return redirect()->route('onboarding.confirm');
+        }
 
         return redirect()->route('onboarding.skills');
     }
@@ -44,11 +72,13 @@ class OnboardingController extends Controller
             return redirect()->route('dashboard');
         }
 
-        if (! $this->selectedPath($request)) {
+        $path = $this->selectedPath($request);
+
+        if (! $path) {
             return redirect()->route('onboarding.show');
         }
 
-        $catalog = Skill::query()
+        $pathSkills = $path->skills()
             ->where('name', 'not like', 'achv-skill-%')
             ->orderBy('name')
             ->get();
@@ -59,9 +89,11 @@ class OnboardingController extends Controller
             ->get();
 
         return view('onboarding.skills', [
-            'catalog' => $catalog,
+            'path' => $path,
+            'pathSkills' => $pathSkills,
             'selectedIds' => $selectedIds,
             'selectedSkills' => $selectedSkills,
+            'startingAs' => $this->startingAs($request),
         ]);
     }
 
@@ -70,6 +102,8 @@ class OnboardingController extends Controller
         if (! $this->selectedPath($request)) {
             return redirect()->route('onboarding.show');
         }
+
+        $request->session()->put('onboarding.starting_as', 'experienced');
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
@@ -92,12 +126,30 @@ class OnboardingController extends Controller
             return redirect()->route('onboarding.show');
         }
 
+        if ($this->startingAs($request) === 'beginner') {
+            $request->session()->put('onboarding.skill_ids', []);
+
+            return redirect()->route('onboarding.confirm');
+        }
+
         $validated = $request->validate([
             'skill_ids' => ['nullable', 'array'],
             'skill_ids.*' => ['integer', 'exists:skills,id'],
         ]);
 
         $ids = array_values(array_unique(array_map('intval', $validated['skill_ids'] ?? [])));
+
+        if ($ids === []) {
+            $request->session()->put('onboarding.starting_as', 'experienced');
+
+            return redirect()
+                ->route('onboarding.skills')
+                ->withErrors([
+                    'skill_ids' => 'Select at least one skill, or choose “I\'m a total beginner” if you are starting from the first step.',
+                ]);
+        }
+
+        $request->session()->put('onboarding.starting_as', 'experienced');
         $request->session()->put('onboarding.skill_ids', $ids);
 
         return redirect()->route('onboarding.confirm');
@@ -115,6 +167,10 @@ class OnboardingController extends Controller
             return redirect()->route('onboarding.show');
         }
 
+        if ($this->startingAs($request) !== 'beginner' && $this->selectedSkillIds($request) === []) {
+            return redirect()->route('onboarding.skills');
+        }
+
         $skills = Skill::query()
             ->whereIn('id', $this->selectedSkillIds($request))
             ->orderBy('name')
@@ -123,6 +179,7 @@ class OnboardingController extends Controller
         return view('onboarding.confirm', [
             'path' => $path,
             'skills' => $skills,
+            'isBeginner' => $this->startingAs($request) === 'beginner',
         ]);
     }
 
@@ -140,7 +197,13 @@ class OnboardingController extends Controller
             return redirect()->route('onboarding.show');
         }
 
-        $skillIds = $this->selectedSkillIds($request);
+        $skillIds = $this->startingAs($request) === 'beginner'
+            ? []
+            : $this->selectedSkillIds($request);
+
+        if ($this->startingAs($request) !== 'beginner' && $skillIds === []) {
+            return redirect()->route('onboarding.skills');
+        }
 
         $user->path_id = $path->id;
         $user->onboarding_completed = true;
@@ -149,7 +212,7 @@ class OnboardingController extends Controller
         $user->skills()->sync($skillIds);
         app(AchievementService::class)->checkAndUnlock($user);
 
-        $request->session()->forget(['onboarding.path_id', 'onboarding.skill_ids']);
+        $request->session()->forget(['onboarding.path_id', 'onboarding.skill_ids', 'onboarding.starting_as']);
 
         return redirect()->route('dashboard');
     }
@@ -163,6 +226,13 @@ class OnboardingController extends Controller
         }
 
         return LearningPath::query()->find($pathId);
+    }
+
+    private function startingAs(Request $request): ?string
+    {
+        $value = $request->session()->get('onboarding.starting_as');
+
+        return in_array($value, ['experienced', 'beginner'], true) ? $value : null;
     }
 
     /**

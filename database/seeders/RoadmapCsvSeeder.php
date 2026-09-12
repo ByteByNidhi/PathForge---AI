@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\LearningPath;
 use App\Models\RoadmapStep;
+use App\Models\Skill;
 use Illuminate\Database\Seeder;
 
 class RoadmapCsvSeeder extends Seeder
@@ -60,7 +61,7 @@ class RoadmapCsvSeeder extends Seeder
                     );
                 }
 
-                RoadmapStep::firstOrCreate(
+                $step = RoadmapStep::firstOrCreate(
                     [
                         'path_id' => $paths[$pathName]->id,
                         'step_no' => $stepNo,
@@ -70,10 +71,66 @@ class RoadmapCsvSeeder extends Seeder
                         'xp_reward' => $xpReward,
                     ]
                 );
+
+                $this->syncStepSkills(
+                    $step,
+                    RoadmapSkillCatalog::skillsForStep(
+                        $pathName,
+                        $stepNo,
+                        (string) ($record['Skills'] ?? '')
+                    )
+                );
+            }
+
+            foreach ($paths as $pathName => $path) {
+                $this->syncPathSkills($path, RoadmapSkillCatalog::pathSkills()[$pathName] ?? []);
             }
         } finally {
             fclose($handle);
         }
+    }
+
+    /**
+     * @param  list<string>  $names
+     */
+    private function syncStepSkills(RoadmapStep $step, array $names): void
+    {
+        $ids = $this->skillIdsFromNames($names);
+
+        if ($ids === []) {
+            return;
+        }
+
+        $step->skills()->syncWithoutDetaching($ids);
+    }
+
+    /**
+     * @param  list<string>  $names
+     */
+    private function syncPathSkills(LearningPath $path, array $names): void
+    {
+        $ids = $this->skillIdsFromNames($names);
+
+        if ($ids === []) {
+            return;
+        }
+
+        $path->skills()->sync($ids);
+    }
+
+    /**
+     * @param  list<string>  $names
+     * @return list<int>
+     */
+    private function skillIdsFromNames(array $names): array
+    {
+        $ids = [];
+
+        foreach ($names as $name) {
+            $ids[] = Skill::findOrCreateByName($name)->id;
+        }
+
+        return array_values(array_unique($ids));
     }
 
     /**

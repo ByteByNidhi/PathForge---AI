@@ -13,7 +13,9 @@
                 <dd>{{ $path->path_name }}</dd>
                 <dt>Skills</dt>
                 <dd>
-                    @if ($skills->isEmpty())
+                    @if ($isBeginner)
+                        Starting from the beginning. You can add skills later from your profile.
+                    @elseif ($skills->isEmpty())
                         None selected yet. You can add skills later from your profile.
                     @else
                         <ul>

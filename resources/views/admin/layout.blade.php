@@ -31,6 +31,9 @@
             @if (session('success'))
                 <div class="pf-flash">{{ session('success') }}</div>
             @endif
+            @if (session('error'))
+                <div class="pf-flash pf-flash--error">{{ session('error') }}</div>
+            @endif
             @yield('content')
         </div>
     </div>

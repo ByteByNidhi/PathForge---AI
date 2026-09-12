@@ -22,6 +22,11 @@ class SkillSeeder extends Seeder
             'Git',
             'Communication',
             'UI/UX Design',
+            'Linux',
+            'SQL',
+            'Docker',
+            'Figma',
+            'Networking',
         ];
 
         foreach ($names as $name) {

@@ -102,4 +102,56 @@ class User extends Authenticatable
 
         app(AchievementService::class)->checkAndUnlock($this);
     }
+
+    public function xpIntoLevel(): int
+    {
+        return ((int) ($this->xp ?? 0)) % 100;
+    }
+
+    public function availableRoadmapStep(?LearningPath $path = null): ?RoadmapStep
+    {
+        $path ??= $this->learningPath;
+
+        if (! $path) {
+            return null;
+        }
+
+        $completedIds = $this->completedRoadmapStepIds($path);
+
+        return $path->roadmapSteps()
+            ->orderBy('step_no')
+            ->orderBy('id')
+            ->get()
+            ->first(fn (RoadmapStep $step) => ! $completedIds->contains($step->id));
+    }
+
+    public function canCompleteRoadmapStep(RoadmapStep $step): bool
+    {
+        if ((int) $this->path_id !== (int) $step->path_id) {
+            return false;
+        }
+
+        $available = $this->availableRoadmapStep($step->learningPath);
+
+        return $available !== null && (int) $available->id === (int) $step->id;
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, int>
+     */
+    public function completedRoadmapStepIds(?LearningPath $path = null)
+    {
+        $path ??= $this->learningPath;
+
+        if (! $path) {
+            return collect();
+        }
+
+        $stepIds = $path->roadmapSteps()->pluck('id');
+
+        return $this->userProgress()
+            ->whereIn('roadmap_step_id', $stepIds)
+            ->where('status', 'completed')
+            ->pluck('roadmap_step_id');
+    }
 }

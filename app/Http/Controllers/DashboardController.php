@@ -32,9 +32,7 @@ class DashboardController extends Controller
             $progressPercent = $totalSteps > 0
                 ? (int) round(($completedSteps / $totalSteps) * 100)
                 : 0;
-            $currentStep = $steps->first(function ($step) use ($completedIds) {
-                return ! $completedIds->contains($step->id);
-            });
+            $currentStep = $user->availableRoadmapStep($path);
             $recentCompletions = $progressRecords
                 ->where('status', 'completed')
                 ->sortByDesc(fn ($row) => $row->completed_at ?? $row->updated_at)
@@ -44,6 +42,7 @@ class DashboardController extends Controller
 
         $skillNames = $user->skills->pluck('name')->all();
         $recommendedOpportunities = Opportunity::query()
+            ->visibleToStudents()
             ->orderBy('deadline')
             ->limit(12)
             ->get()
@@ -58,8 +57,6 @@ class DashboardController extends Controller
             ->take(3)
             ->values();
 
-        $xp = (int) ($user->xp ?? 0);
-
         return view('dashboard', [
             'user' => $user,
             'path' => $path,
@@ -71,7 +68,7 @@ class DashboardController extends Controller
             'achievements' => $achievements->catalogFor($user)->take(4),
             'recommendedOpportunities' => $recommendedOpportunities,
             'recentCompletions' => $recentCompletions,
-            'xpIntoLevel' => $xp % 100,
+            'xpIntoLevel' => $user->xpIntoLevel(),
         ]);
     }
 }

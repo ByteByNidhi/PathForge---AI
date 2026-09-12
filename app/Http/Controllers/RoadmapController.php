@@ -38,20 +38,28 @@ class RoadmapController extends Controller
     public function show(LearningPath $learningPath): View
     {
         $steps = $learningPath->roadmapSteps()
+            ->with('skills')
             ->orderBy('step_no')
+            ->orderBy('id')
             ->get();
 
-        $progressByStepId = auth()->user()
+        $user = auth()->user();
+        $isSelected = (int) $user->path_id === (int) $learningPath->id;
+
+        $progressByStepId = $user
             ->userProgress()
             ->whereIn('roadmap_step_id', $steps->pluck('id'))
             ->get()
             ->keyBy('roadmap_step_id');
 
+        $availableStep = $isSelected ? $user->availableRoadmapStep($learningPath) : null;
+
         return view('roadmaps.show', [
             'path' => $learningPath,
             'steps' => $steps,
             'progressByStepId' => $progressByStepId,
-            'isSelected' => (int) auth()->user()->path_id === (int) $learningPath->id,
+            'isSelected' => $isSelected,
+            'availableStepId' => $availableStep?->id,
         ]);
     }
 
@@ -63,12 +71,20 @@ class RoadmapController extends Controller
 
         $user = $request->user();
 
+        if ((int) $user->path_id !== (int) $learningPath->id) {
+            abort(403, 'You can only complete steps on your selected career path.');
+        }
+
         $progress = UserProgress::firstOrNew([
             'user_id' => $user->id,
             'roadmap_step_id' => $roadmapStep->id,
         ]);
 
         $alreadyCompleted = $progress->exists && $progress->status === 'completed';
+
+        if (! $alreadyCompleted && ! $user->canCompleteRoadmapStep($roadmapStep)) {
+            abort(403, 'Complete your current roadmap step first.');
+        }
 
         $progress->status = 'completed';
         $progress->completed_at = $progress->completed_at ?? now();

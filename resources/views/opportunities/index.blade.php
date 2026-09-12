@@ -79,6 +79,9 @@
                     · {{ $opportunity->organization }}
                     · {{ $opportunity->location }}
                     · Deadline: {{ $opportunity->deadline ? $opportunity->deadline->format('M j, Y') : 'Not specified' }}
+                    @if ($opportunity->isHimalayasSourced())
+                        · Source: <a href="https://himalayas.app" target="_blank" rel="noopener noreferrer">Himalayas</a>
+                    @endif
                 </p>
                 <p class="match">
                     @if (! $match['has_user_skills'])

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RoadmapStep extends Model
@@ -23,5 +24,11 @@ class RoadmapStep extends Model
     public function userProgress(): HasMany
     {
         return $this->hasMany(UserProgress::class, 'roadmap_step_id');
+    }
+
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, 'roadmap_step_skill')
+            ->withTimestamps();
     }
 }

@@ -55,8 +55,9 @@ class OpportunityController extends Controller
                 ->pluck('name')
                 ->all();
 
-            $totalCount = Opportunity::query()->count();
+            $totalCount = Opportunity::query()->visibleToStudents()->count();
             $locations = Opportunity::query()
+                ->visibleToStudents()
                 ->whereNotNull('location')
                 ->where('location', '!=', '')
                 ->distinct()
@@ -65,7 +66,7 @@ class OpportunityController extends Controller
 
             $skillOptions = $this->skillOptions();
 
-            $query = Opportunity::query();
+            $query = Opportunity::query()->visibleToStudents();
 
             if ($selectedType !== null) {
                 $query->where('type', $selectedType);
@@ -153,6 +154,8 @@ class OpportunityController extends Controller
 
     public function show(Opportunity $opportunity): View
     {
+        abort_unless($opportunity->isVisibleToStudents(), 404);
+
         $userSkillNames = request()->user()
             ->skills()
             ->pluck('name')
@@ -200,6 +203,7 @@ class OpportunityController extends Controller
     private function skillOptions(): Collection
     {
         return Opportunity::query()
+            ->visibleToStudents()
             ->whereNotNull('required_skills')
             ->pluck('required_skills')
             ->flatMap(fn (?string $raw) => Opportunity::parseSkillList($raw))

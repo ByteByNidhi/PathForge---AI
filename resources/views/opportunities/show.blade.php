@@ -42,6 +42,10 @@
             <dd>{{ $opportunity->deadline ? $opportunity->deadline->format('M j, Y') : 'Not specified' }}</dd>
             <dt>Location</dt>
             <dd>{{ $opportunity->location }}</dd>
+            @if ($opportunity->isHimalayasSourced())
+                <dt>Source</dt>
+                <dd><a href="https://himalayas.app" target="_blank" rel="noopener noreferrer">Himalayas</a></dd>
+            @endif
         </dl>
         @if ($opportunity->application_url)
             <a class="btn" href="{{ $opportunity->application_url }}" target="_blank" rel="noopener noreferrer">Apply</a>

@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Opportunity extends Model
 {
@@ -12,6 +14,12 @@ class Opportunity extends Model
     public const STATUS_CLOSED = 'closed';
 
     public const CLOSING_SOON_DAYS = 14;
+
+    public const APPROVAL_PENDING = 'pending';
+    public const APPROVAL_APPROVED = 'approved';
+    public const APPROVAL_REJECTED = 'rejected';
+
+    public const SOURCE_HIMALAYAS = 'himalayas';
 
     protected $fillable = [
         'title',
@@ -23,6 +31,10 @@ class Opportunity extends Model
         'deadline',
         'application_url',
         'location',
+        'source',
+        'external_id',
+        'source_url',
+        'approval_status',
     ];
 
     protected function casts(): array
@@ -30,6 +42,79 @@ class Opportunity extends Model
         return [
             'deadline' => 'date',
         ];
+    }
+
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, 'opportunity_skills')
+            ->withTimestamps();
+    }
+
+    public function isApproved(): bool
+    {
+        return ($this->approval_status ?: self::APPROVAL_APPROVED) === self::APPROVAL_APPROVED;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->approval_status === self::APPROVAL_PENDING;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->approval_status === self::APPROVAL_REJECTED;
+    }
+
+    public function isHimalayasSourced(): bool
+    {
+        return $this->source === self::SOURCE_HIMALAYAS;
+    }
+
+    public function isExpired(?Carbon $today = null): bool
+    {
+        if ($this->deadline === null) {
+            return false;
+        }
+
+        $today = ($today ?? now())->copy()->startOfDay();
+
+        return $this->deadline->copy()->startOfDay()->lt($today);
+    }
+
+    public function isVisibleToStudents(?Carbon $today = null): bool
+    {
+        if (! $this->isApproved()) {
+            return false;
+        }
+
+        if ($this->source && $this->isExpired($today)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function scopeVisibleToStudents(Builder $query): Builder
+    {
+        $today = now()->toDateString();
+
+        return $query
+            ->where(function (Builder $builder) {
+                $builder->where('approval_status', self::APPROVAL_APPROVED)
+                    ->orWhereNull('approval_status');
+            })
+            ->where(function (Builder $builder) use ($today) {
+                $builder->whereNull('source')
+                    ->orWhere('source', '')
+                    ->orWhere(function (Builder $imported) use ($today) {
+                        $imported->whereNotNull('source')
+                            ->where('source', '!=', '')
+                            ->where(function (Builder $open) use ($today) {
+                                $open->whereNull('deadline')
+                                    ->orWhereDate('deadline', '>=', $today);
+                            });
+                    });
+            });
     }
 
     /**

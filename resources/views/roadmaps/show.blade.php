@@ -23,13 +23,24 @@
         <article class="pf-card step" style="margin-bottom:12px;">
             <h2>Step {{ $step->step_no }}: {{ $step->title }}</h2>
             <p class="meta muted">XP reward: {{ $step->xp_reward }}</p>
+            @if ($step->skills->isNotEmpty())
+                <div class="chips">
+                    @foreach ($step->skills as $skill)
+                        <span class="chip">{{ $skill->name }}</span>
+                    @endforeach
+                </div>
+            @endif
             @if ($completed)
                 <p class="done">Completed</p>
-            @else
+            @elseif ($isSelected && (int) $availableStepId === (int) $step->id)
                 <form method="POST" action="{{ route('roadmaps.complete', [$path, $step]) }}">
                     @csrf
                     <button class="btn" type="submit">Mark complete</button>
                 </form>
+            @elseif ($isSelected)
+                <p class="muted">Locked</p>
+            @else
+                <p class="muted">Select this roadmap to complete its steps.</p>
             @endif
         </article>
     @empty

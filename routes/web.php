@@ -34,6 +34,7 @@ Route::middleware('auth')->prefix('onboarding')->name('onboarding.')->group(func
     Route::post('/path', [OnboardingController::class, 'storePath'])->name('path.store');
     Route::get('/skills', [OnboardingController::class, 'skills'])->name('skills');
     Route::post('/skills', [OnboardingController::class, 'storeSkill'])->name('skills.store');
+    Route::post('/skills/starting', [OnboardingController::class, 'storeStartingPoint'])->name('skills.starting');
     Route::post('/skills/continue', [OnboardingController::class, 'toggleSkills'])->name('skills.continue');
     Route::get('/confirm', [OnboardingController::class, 'confirm'])->name('confirm');
     Route::post('/confirm', [OnboardingController::class, 'complete'])->name('complete');
@@ -64,6 +65,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/opportunities', [AdminOpportunityController::class, 'index'])->name('opportunities.index');
     Route::get('/opportunities/create', [AdminOpportunityController::class, 'create'])->name('opportunities.create');
     Route::post('/opportunities', [AdminOpportunityController::class, 'store'])->name('opportunities.store');
+    Route::post('/opportunities/fetch', [AdminOpportunityController::class, 'fetch'])->name('opportunities.fetch');
+    Route::post('/opportunities/{opportunity}/approve', [AdminOpportunityController::class, 'approve'])->name('opportunities.approve');
+    Route::post('/opportunities/{opportunity}/reject', [AdminOpportunityController::class, 'reject'])->name('opportunities.reject');
     Route::get('/opportunities/{opportunity}/edit', [AdminOpportunityController::class, 'edit'])->name('opportunities.edit');
     Route::put('/opportunities/{opportunity}', [AdminOpportunityController::class, 'update'])->name('opportunities.update');
     Route::delete('/opportunities/{opportunity}', [AdminOpportunityController::class, 'destroy'])->name('opportunities.destroy');

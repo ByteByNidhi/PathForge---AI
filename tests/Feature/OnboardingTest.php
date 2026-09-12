@@ -95,6 +95,22 @@ class OnboardingTest extends TestCase
             ->assertRedirect(route('onboarding.skills'));
 
         $this->actingAs($user)
+            ->get('/onboarding/skills')
+            ->assertOk()
+            ->assertSee('How are you starting?')
+            ->assertSee('I already have some skills')
+            ->assertSee('I\'m a total beginner', false);
+
+        $this->actingAs($user)
+            ->post('/onboarding/skills/starting', ['starting_as' => 'experienced'])
+            ->assertRedirect(route('onboarding.skills'));
+
+        $this->actingAs($user)
+            ->get('/onboarding/skills')
+            ->assertOk()
+            ->assertSee('Skills for '.$path->path_name);
+
+        $this->actingAs($user)
             ->post('/onboarding/skills', ['name' => 'Python'])
             ->assertRedirect(route('onboarding.skills'));
 

@@ -20,10 +20,11 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
+            SkillSeeder::class,
+            RoadmapCsvSeeder::class,
             AdminUserSeeder::class,
             OpportunitySeeder::class,
             AchievementSeeder::class,
-            SkillSeeder::class,
         ]);
     }
 }
