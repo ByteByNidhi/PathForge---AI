@@ -17,6 +17,7 @@ class OpportunityController extends Controller
     public function index(): View
     {
         $opportunities = Opportunity::query()
+            ->with('owningOrganization')
             ->orderByDesc('id')
             ->get();
 
@@ -110,16 +111,30 @@ class OpportunityController extends Controller
 
     public function approve(Opportunity $opportunity): RedirectResponse
     {
-        $opportunity->update(['approval_status' => Opportunity::APPROVAL_APPROVED]);
+        abort_unless($opportunity->isPending() || $opportunity->isRejected(), 403);
+
+        $opportunity->update([
+            'approval_status' => Opportunity::APPROVAL_APPROVED,
+            'rejection_reason' => null,
+        ]);
 
         return redirect()
             ->route('admin.opportunities.index')
             ->with('success', 'Opportunity approved.');
     }
 
-    public function reject(Opportunity $opportunity): RedirectResponse
+    public function reject(Request $request, Opportunity $opportunity): RedirectResponse
     {
-        $opportunity->update(['approval_status' => Opportunity::APPROVAL_REJECTED]);
+        abort_unless($opportunity->isPending() || $opportunity->isApproved(), 403);
+
+        $validated = $request->validate([
+            'rejection_reason' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $opportunity->update([
+            'approval_status' => Opportunity::APPROVAL_REJECTED,
+            'rejection_reason' => $validated['rejection_reason'] ?? null,
+        ]);
 
         return redirect()
             ->route('admin.opportunities.index')

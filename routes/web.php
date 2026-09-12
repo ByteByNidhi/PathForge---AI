@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\OpportunityController as AdminOpportunityController;
+use App\Http\Controllers\Admin\OrganizationController as AdminOrganizationController;
 use App\Http\Controllers\Admin\RoadmapController as AdminRoadmapController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AchievementController;
@@ -11,6 +12,10 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\OpportunityController;
+use App\Http\Controllers\Organization\DashboardController as OrganizationDashboardController;
+use App\Http\Controllers\Organization\MemberController as OrganizationMemberController;
+use App\Http\Controllers\Organization\OpportunityController as OrganizationOpportunityController;
+use App\Http\Controllers\Organization\ProfileController as OrganizationProfileController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\RoadmapController;
@@ -26,10 +31,10 @@ Route::post('/login', [LoginController::class, 'store']);
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'onboarded'])
+    ->middleware(['auth', 'student', 'onboarded'])
     ->name('dashboard');
 
-Route::middleware('auth')->prefix('onboarding')->name('onboarding.')->group(function () {
+Route::middleware(['auth', 'student'])->prefix('onboarding')->name('onboarding.')->group(function () {
     Route::get('/', [OnboardingController::class, 'show'])->name('show');
     Route::post('/path', [OnboardingController::class, 'storePath'])->name('path.store');
     Route::get('/skills', [OnboardingController::class, 'skills'])->name('skills');
@@ -40,7 +45,7 @@ Route::middleware('auth')->prefix('onboarding')->name('onboarding.')->group(func
     Route::post('/confirm', [OnboardingController::class, 'complete'])->name('complete');
 });
 
-Route::middleware(['auth', 'onboarded'])->group(function () {
+Route::middleware(['auth', 'student', 'onboarded'])->group(function () {
     Route::get('/ai-studio', [AiStudioController::class, 'show'])->name('ai-studio');
     Route::post('/ai-studio/chat', [AiStudioController::class, 'chat'])->name('ai-studio.chat');
 
@@ -60,6 +65,27 @@ Route::middleware(['auth', 'onboarded'])->group(function () {
     Route::post('/opportunities/{opportunity}/save', [OpportunityController::class, 'save'])->name('opportunities.save');
     Route::delete('/opportunities/{opportunity}/save', [OpportunityController::class, 'unsave'])->name('opportunities.unsave');
     Route::get('/opportunities/{opportunity}', [OpportunityController::class, 'show'])->name('opportunities.show');
+});
+
+Route::middleware(['auth', 'organization'])->prefix('organization')->name('organization.')->group(function () {
+    Route::get('/', [OrganizationDashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/profile', [OrganizationProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [OrganizationProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('/members', [OrganizationMemberController::class, 'index'])->name('members.index');
+    Route::post('/members', [OrganizationMemberController::class, 'store'])->name('members.store');
+    Route::put('/members/{user}', [OrganizationMemberController::class, 'update'])->name('members.update');
+    Route::delete('/members/{user}', [OrganizationMemberController::class, 'destroy'])->name('members.destroy');
+
+    Route::get('/opportunities', [OrganizationOpportunityController::class, 'index'])->name('opportunities.index');
+    Route::get('/opportunities/create', [OrganizationOpportunityController::class, 'create'])->name('opportunities.create');
+    Route::post('/opportunities', [OrganizationOpportunityController::class, 'store'])->name('opportunities.store');
+    Route::get('/opportunities/{opportunity}', [OrganizationOpportunityController::class, 'show'])->name('opportunities.show');
+    Route::get('/opportunities/{opportunity}/edit', [OrganizationOpportunityController::class, 'edit'])->name('opportunities.edit');
+    Route::put('/opportunities/{opportunity}', [OrganizationOpportunityController::class, 'update'])->name('opportunities.update');
+    Route::post('/opportunities/{opportunity}/submit', [OrganizationOpportunityController::class, 'submit'])->name('opportunities.submit');
+    Route::delete('/opportunities/{opportunity}', [OrganizationOpportunityController::class, 'destroy'])->name('opportunities.destroy');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -82,6 +108,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/roadmaps/{learningPath}/steps/{roadmapStep}/edit', [AdminRoadmapController::class, 'editStep'])->name('roadmaps.steps.edit');
     Route::put('/roadmaps/{learningPath}/steps/{roadmapStep}', [AdminRoadmapController::class, 'updateStep'])->name('roadmaps.steps.update');
     Route::delete('/roadmaps/{learningPath}/steps/{roadmapStep}', [AdminRoadmapController::class, 'destroyStep'])->name('roadmaps.steps.destroy');
+
+    Route::get('/organizations', [AdminOrganizationController::class, 'index'])->name('organizations.index');
+    Route::get('/organizations/create', [AdminOrganizationController::class, 'create'])->name('organizations.create');
+    Route::post('/organizations', [AdminOrganizationController::class, 'store'])->name('organizations.store');
 
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');

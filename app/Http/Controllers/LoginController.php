@@ -35,6 +35,10 @@ class LoginController extends Controller
             return redirect('/admin');
         }
 
+        if ($request->user()->isOrganizationUser()) {
+            return redirect()->route('organization.dashboard');
+        }
+
         if (! $request->user()->hasCompletedOnboarding()) {
             return redirect()->route('onboarding.show');
         }

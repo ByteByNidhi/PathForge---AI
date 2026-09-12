@@ -46,6 +46,7 @@
                     <th>Title</th>
                     <th>Organization</th>
                     <th>Source</th>
+                    <th>Status</th>
                     <th>Deadline</th>
                     <th></th>
                 </tr>
@@ -54,8 +55,9 @@
                 @foreach ($pending as $opportunity)
                     <tr>
                         <td>{{ $opportunity->title }}</td>
-                        <td>{{ $opportunity->organization }}</td>
-                        <td>{{ $opportunity->source ? ucfirst($opportunity->source) : 'PathForge' }}</td>
+                        <td>{{ $opportunity->owningOrganization?->name ?? $opportunity->organization }}</td>
+                        <td>{{ $opportunity->sourceLabel() }}</td>
+                        <td>{{ $opportunity->approvalStatusLabel() }}</td>
                         <td>{{ $opportunity->deadline?->toDateString() ?? 'None' }}</td>
                         <td>
                             <form class="inline-form" method="POST" action="{{ route('admin.opportunities.approve', $opportunity) }}">
@@ -64,6 +66,7 @@
                             </form>
                             <form class="inline-form" method="POST" action="{{ route('admin.opportunities.reject', $opportunity) }}">
                                 @csrf
+                                <input name="rejection_reason" placeholder="Rejection reason (optional)" style="max-width:180px;">
                                 <button class="btn btn-danger" type="submit">Reject</button>
                             </form>
                             <a href="{{ route('admin.opportunities.edit', $opportunity) }}">Edit</a>
@@ -83,6 +86,7 @@
                     <th>Title</th>
                     <th>Organization</th>
                     <th>Type</th>
+                    <th>Source</th>
                     <th>Status</th>
                     <th>Location</th>
                     <th>Deadline</th>
@@ -93,9 +97,10 @@
                 @foreach ($opportunities as $opportunity)
                     <tr>
                         <td>{{ $opportunity->title }}</td>
-                        <td>{{ $opportunity->organization }}</td>
+                        <td>{{ $opportunity->owningOrganization?->name ?? $opportunity->organization }}</td>
                         <td>{{ $opportunity->type }}</td>
-                        <td>{{ ucfirst($opportunity->approval_status ?: 'approved') }}</td>
+                        <td>{{ $opportunity->sourceLabel() }}</td>
+                        <td>{{ $opportunity->approvalStatusLabel() }}</td>
                         <td>{{ $opportunity->location ?? '—' }}</td>
                         <td>{{ $opportunity->deadline?->toDateString() ?? 'None' }}</td>
                         <td>
@@ -106,11 +111,13 @@
                                 </form>
                                 <form class="inline-form" method="POST" action="{{ route('admin.opportunities.reject', $opportunity) }}">
                                     @csrf
+                                    <input name="rejection_reason" placeholder="Rejection reason (optional)" style="max-width:180px;">
                                     <button class="btn btn-danger" type="submit">Reject</button>
                                 </form>
                             @elseif ($opportunity->isApproved() && $opportunity->source)
                                 <form class="inline-form" method="POST" action="{{ route('admin.opportunities.reject', $opportunity) }}">
                                     @csrf
+                                    <input name="rejection_reason" placeholder="Rejection reason (optional)" style="max-width:180px;">
                                     <button class="btn btn-danger" type="submit">Reject</button>
                                 </form>
                             @elseif ($opportunity->isRejected())

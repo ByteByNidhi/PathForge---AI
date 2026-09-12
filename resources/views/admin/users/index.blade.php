@@ -26,7 +26,7 @@
                     <tr>
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
-                        <td>{{ $user->isAdmin() ? 'Admin' : 'User' }}</td>
+                        <td>{{ $user->isAdmin() ? 'Admin' : ($user->organizations->isNotEmpty() ? 'Organization' : 'User') }}</td>
                         <td>{{ $user->learningPath->path_name ?? 'None' }}</td>
                         <td>{{ $user->xp ?? 0 }}</td>
                         <td>{{ $user->level ?? 1 }}</td>

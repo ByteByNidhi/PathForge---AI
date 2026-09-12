@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Opportunity extends Model
@@ -15,11 +16,13 @@ class Opportunity extends Model
 
     public const CLOSING_SOON_DAYS = 14;
 
+    public const APPROVAL_DRAFT = 'draft';
     public const APPROVAL_PENDING = 'pending';
     public const APPROVAL_APPROVED = 'approved';
     public const APPROVAL_REJECTED = 'rejected';
 
     public const SOURCE_HIMALAYAS = 'himalayas';
+    public const SOURCE_ORGANIZATION = 'organization';
 
     protected $fillable = [
         'title',
@@ -35,6 +38,9 @@ class Opportunity extends Model
         'external_id',
         'source_url',
         'approval_status',
+        'organization_id',
+        'submitted_by_user_id',
+        'rejection_reason',
     ];
 
     protected function casts(): array
@@ -42,6 +48,16 @@ class Opportunity extends Model
         return [
             'deadline' => 'date',
         ];
+    }
+
+    public function owningOrganization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class, 'organization_id');
+    }
+
+    public function submittedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'submitted_by_user_id');
     }
 
     public function skills(): BelongsToMany
@@ -62,6 +78,11 @@ class Opportunity extends Model
         return ($this->approval_status ?: self::APPROVAL_APPROVED) === self::APPROVAL_APPROVED;
     }
 
+    public function isDraft(): bool
+    {
+        return $this->approval_status === self::APPROVAL_DRAFT;
+    }
+
     public function isPending(): bool
     {
         return $this->approval_status === self::APPROVAL_PENDING;
@@ -75,6 +96,39 @@ class Opportunity extends Model
     public function isHimalayasSourced(): bool
     {
         return $this->source === self::SOURCE_HIMALAYAS;
+    }
+
+    public function isOrganizationSourced(): bool
+    {
+        return $this->source === self::SOURCE_ORGANIZATION || $this->organization_id !== null;
+    }
+
+    public function sourceLabel(): string
+    {
+        if ($this->isHimalayasSourced()) {
+            return 'Himalayas';
+        }
+
+        if ($this->isOrganizationSourced()) {
+            return 'Organization';
+        }
+
+        return 'PathForge';
+    }
+
+    public function approvalStatusLabel(): string
+    {
+        return match ($this->approval_status) {
+            self::APPROVAL_DRAFT => 'Draft',
+            self::APPROVAL_PENDING => 'Pending Review',
+            self::APPROVAL_REJECTED => 'Rejected',
+            default => 'Approved',
+        };
+    }
+
+    public function scopeForOrganization(Builder $query, Organization $organization): Builder
+    {
+        return $query->where('organization_id', $organization->id);
     }
 
     public function isExpired(?Carbon $today = null): bool

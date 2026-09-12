@@ -11,7 +11,7 @@ class UserController extends Controller
     public function index(): View
     {
         $users = User::query()
-            ->with('learningPath')
+            ->with(['learningPath', 'organizations'])
             ->orderBy('name')
             ->get();
 

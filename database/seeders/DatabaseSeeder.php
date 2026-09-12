@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             SkillSeeder::class,
             RoadmapCsvSeeder::class,
             AdminUserSeeder::class,
+            OrganizationSeeder::class,
             OpportunitySeeder::class,
             AchievementSeeder::class,
         ]);

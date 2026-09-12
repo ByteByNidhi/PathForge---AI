@@ -60,6 +60,52 @@ class User extends Authenticatable
         return (bool) $this->is_admin;
     }
 
+    public function organizationMemberships(): HasMany
+    {
+        return $this->hasMany(OrganizationUser::class);
+    }
+
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class, 'organization_users')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    public function currentOrganization(): ?Organization
+    {
+        if ($this->relationLoaded('organizations')) {
+            return $this->organizations->first();
+        }
+
+        return $this->organizations()->orderBy('organization_users.id')->first();
+    }
+
+    public function isOrganizationUser(): bool
+    {
+        if ($this->relationLoaded('organizations')) {
+            return $this->organizations->isNotEmpty();
+        }
+
+        return $this->organizations()->exists();
+    }
+
+    public function organizationRole(?Organization $organization = null): ?string
+    {
+        $organization ??= $this->currentOrganization();
+
+        if ($organization === null) {
+            return null;
+        }
+
+        return $organization->roleFor($this);
+    }
+
+    public function isOrganizationOwner(?Organization $organization = null): bool
+    {
+        return $this->organizationRole($organization) === Organization::ROLE_OWNER;
+    }
+
     public function hasCompletedOnboarding(): bool
     {
         return (bool) $this->onboarding_completed;
