@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Opportunity;
+use App\Models\Skill;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -24,10 +26,12 @@ class OpportunityController extends Controller
     ];
 
     public const SORTS = [
+        'match',
         'nearest',
         'latest',
-        'match',
     ];
+
+    public const DEFAULT_SORT = 'match';
 
     public function index(Request $request): View
     {
@@ -35,12 +39,12 @@ class OpportunityController extends Controller
         $selectedLocation = trim((string) $request->query('location', ''));
         $selectedStatus = $request->query('status');
         $selectedSkill = trim((string) $request->query('skill', ''));
-        $sort = $request->query('sort', 'nearest');
+        $sort = $request->query('sort', self::DEFAULT_SORT);
         $search = trim((string) $request->query('q', ''));
 
         $selectedType = in_array($selectedType, self::TYPES, true) ? $selectedType : null;
         $selectedStatus = in_array($selectedStatus, self::STATUSES, true) ? $selectedStatus : null;
-        $sort = in_array($sort, self::SORTS, true) ? $sort : 'nearest';
+        $sort = in_array($sort, self::SORTS, true) ? $sort : self::DEFAULT_SORT;
 
         $error = null;
         $opportunities = collect();
@@ -48,11 +52,18 @@ class OpportunityController extends Controller
         $skillOptions = collect();
         $totalCount = 0;
         $userSkillNames = [];
+        $savedIds = [];
 
         try {
-            $userSkillNames = $request->user()
+            $user = $request->user();
+            $userSkillNames = $user
                 ->skills()
                 ->pluck('name')
+                ->all();
+
+            $savedIds = $user->savedOpportunities()
+                ->pluck('opportunities.id')
+                ->map(fn ($id) => (int) $id)
                 ->all();
 
             $totalCount = Opportunity::query()->visibleToStudents()->count();
@@ -66,7 +77,9 @@ class OpportunityController extends Controller
 
             $skillOptions = $this->skillOptions();
 
-            $query = Opportunity::query()->visibleToStudents();
+            $query = Opportunity::query()
+                ->visibleToStudents()
+                ->with('skills');
 
             if ($selectedType !== null) {
                 $query->where('type', $selectedType);
@@ -77,7 +90,13 @@ class OpportunityController extends Controller
             }
 
             if ($selectedSkill !== '') {
-                $query->where('required_skills', 'like', '%'.$this->escapeLike($selectedSkill).'%');
+                $escaped = $this->escapeLike($selectedSkill);
+                $query->where(function ($builder) use ($escaped, $selectedSkill) {
+                    $builder->where('required_skills', 'like', '%'.$escaped.'%')
+                        ->orWhereHas('skills', function ($skills) use ($selectedSkill) {
+                            $skills->whereRaw('LOWER(name) = ?', [mb_strtolower($selectedSkill)]);
+                        });
+                });
             }
 
             if ($search !== '') {
@@ -138,6 +157,7 @@ class OpportunityController extends Controller
             'locations' => $locations,
             'skillOptions' => $skillOptions,
             'hasUserSkills' => $userSkillNames !== [],
+            'savedIds' => $savedIds,
             'totalCount' => $totalCount,
             'hasFilters' => $hasFilters,
             'error' => $error,
@@ -147,8 +167,35 @@ class OpportunityController extends Controller
                 'location' => $selectedLocation !== '' ? $selectedLocation : null,
                 'status' => $selectedStatus,
                 'skill' => $selectedSkill !== '' ? $selectedSkill : null,
-                'sort' => $sort !== 'nearest' ? $sort : null,
+                'sort' => $sort !== self::DEFAULT_SORT ? $sort : null,
             ]),
+        ]);
+    }
+
+    public function saved(Request $request): View
+    {
+        $userSkillNames = $request->user()
+            ->skills()
+            ->pluck('name')
+            ->all();
+
+        $opportunities = $request->user()
+            ->savedOpportunities()
+            ->visibleToStudents()
+            ->with('skills')
+            ->orderByDesc('saved_opportunities.saved_at')
+            ->orderByDesc('saved_opportunities.id')
+            ->get()
+            ->map(function (Opportunity $opportunity) use ($userSkillNames) {
+                $opportunity->setAttribute('skill_match', $opportunity->skillMatch($userSkillNames));
+                $opportunity->setAttribute('deadline_status', $opportunity->deadlineStatus());
+                $opportunity->setAttribute('deadline_status_label', $opportunity->deadlineStatusLabel());
+
+                return $opportunity;
+            });
+
+        return view('opportunities.saved', [
+            'opportunities' => $opportunities,
         ]);
     }
 
@@ -156,17 +203,46 @@ class OpportunityController extends Controller
     {
         abort_unless($opportunity->isVisibleToStudents(), 404);
 
-        $userSkillNames = request()->user()
+        $opportunity->loadMissing('skills');
+
+        $user = request()->user();
+        $userSkillNames = $user
             ->skills()
             ->pluck('name')
             ->all();
+
+        $isSaved = $user->savedOpportunities()
+            ->where('opportunities.id', $opportunity->id)
+            ->exists();
 
         return view('opportunities.show', [
             'opportunity' => $opportunity,
             'skillMatch' => $opportunity->skillMatch($userSkillNames),
             'deadlineStatus' => $opportunity->deadlineStatus(),
             'deadlineStatusLabel' => $opportunity->deadlineStatusLabel(),
+            'isSaved' => $isSaved,
         ]);
+    }
+
+    public function save(Request $request, Opportunity $opportunity): RedirectResponse
+    {
+        abort_unless($opportunity->isVisibleToStudents(), 404);
+        $this->authorize('save', $opportunity);
+
+        $request->user()->savedOpportunities()->syncWithoutDetaching([
+            $opportunity->id => ['saved_at' => now()],
+        ]);
+
+        return back()->with('success', 'Opportunity saved.');
+    }
+
+    public function unsave(Request $request, Opportunity $opportunity): RedirectResponse
+    {
+        $this->authorize('unsave', $opportunity);
+
+        $request->user()->savedOpportunities()->detach($opportunity->id);
+
+        return back()->with('success', 'Opportunity removed from saved.');
     }
 
     /**
@@ -181,19 +257,24 @@ class OpportunityController extends Controller
             })->values();
         }
 
-        if ($sort === 'match') {
-            return $opportunities->sortByDesc(function (Opportunity $opportunity) {
-                $match = $opportunity->getAttribute('skill_match');
+        if ($sort === 'nearest') {
+            return $opportunities->sortBy(function (Opportunity $opportunity) {
+                $closed = $opportunity->getAttribute('deadline_status') === Opportunity::STATUS_CLOSED;
+                $timestamp = $opportunity->deadline?->timestamp ?? PHP_INT_MAX;
 
-                return $match['has_user_skills'] ? ($match['percent'] ?? -1) : -1;
+                return [$closed ? 1 : 0, $timestamp];
             })->values();
         }
 
         return $opportunities->sortBy(function (Opportunity $opportunity) {
-            $closed = $opportunity->getAttribute('deadline_status') === Opportunity::STATUS_CLOSED;
-            $timestamp = $opportunity->deadline?->timestamp ?? PHP_INT_MAX;
+            $match = $opportunity->getAttribute('skill_match');
+            $percent = ($match['has_user_skills'] ?? false) ? ($match['percent'] ?? -1) : -1;
 
-            return [$closed ? 1 : 0, $timestamp];
+            return [
+                -$percent,
+                -($opportunity->created_at?->timestamp ?? 0),
+                $opportunity->deadline?->timestamp ?? PHP_INT_MAX,
+            ];
         })->values();
     }
 
@@ -202,11 +283,21 @@ class OpportunityController extends Controller
      */
     private function skillOptions(): Collection
     {
-        return Opportunity::query()
+        $fromText = Opportunity::query()
             ->visibleToStudents()
             ->whereNotNull('required_skills')
             ->pluck('required_skills')
-            ->flatMap(fn (?string $raw) => Opportunity::parseSkillList($raw))
+            ->flatMap(fn (?string $raw) => Opportunity::parseSkillList($raw));
+
+        $fromPivot = Skill::query()
+            ->whereHas('opportunities', function ($query) {
+                $query->visibleToStudents();
+            })
+            ->pluck('name');
+
+        return $fromText
+            ->merge($fromPivot)
+            ->filter()
             ->unique()
             ->sort()
             ->values();

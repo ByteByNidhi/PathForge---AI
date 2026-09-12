@@ -43,16 +43,23 @@ class DashboardController extends Controller
         $skillNames = $user->skills->pluck('name')->all();
         $recommendedOpportunities = Opportunity::query()
             ->visibleToStudents()
-            ->orderBy('deadline')
-            ->limit(12)
+            ->with('skills')
+            ->orderByDesc('created_at')
+            ->limit(50)
             ->get()
             ->map(function (Opportunity $opportunity) use ($skillNames) {
                 $opportunity->setAttribute('skill_match', $opportunity->skillMatch($skillNames));
 
                 return $opportunity;
             })
-            ->sortByDesc(function (Opportunity $opportunity) {
-                return $opportunity->skill_match['percent'] ?? -1;
+            ->sortBy(function (Opportunity $opportunity) {
+                $percent = $opportunity->skill_match['percent'] ?? -1;
+
+                return [
+                    -$percent,
+                    -($opportunity->created_at?->timestamp ?? 0),
+                    $opportunity->deadline?->timestamp ?? PHP_INT_MAX,
+                ];
             })
             ->take(3)
             ->values();

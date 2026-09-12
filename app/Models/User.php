@@ -82,6 +82,13 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function savedOpportunities(): BelongsToMany
+    {
+        return $this->belongsToMany(Opportunity::class, 'saved_opportunities')
+            ->withPivot('saved_at')
+            ->withTimestamps();
+    }
+
     public function achievements(): BelongsToMany
     {
         return $this->belongsToMany(Achievement::class, 'user_achievements')

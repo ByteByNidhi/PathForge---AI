@@ -50,6 +50,13 @@ class Opportunity extends Model
             ->withTimestamps();
     }
 
+    public function savedByUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'saved_opportunities')
+            ->withPivot('saved_at')
+            ->withTimestamps();
+    }
+
     public function isApproved(): bool
     {
         return ($this->approval_status ?: self::APPROVAL_APPROVED) === self::APPROVAL_APPROVED;
@@ -172,18 +179,55 @@ class Opportunity extends Model
     }
 
     /**
+     * Catalog skills on the opportunity, falling back to required_skills text
+     * for listings that have not been mapped onto the pivot table.
+     *
+     * @return list<string>
+     */
+    public function relevantSkillNames(): array
+    {
+        $mapped = $this->relationLoaded('skills')
+            ? $this->skills
+            : $this->skills()->get();
+
+        $fromPivot = $this->uniqueSkillNames(
+            $mapped->pluck('name')->all()
+        );
+
+        if ($fromPivot !== []) {
+            return $fromPivot;
+        }
+
+        return $this->uniqueSkillNames($this->parsedRequiredSkills());
+    }
+
+    public function hasValidApplicationUrl(): bool
+    {
+        $url = trim((string) $this->application_url);
+
+        if ($url === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
+
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+
+        return in_array($scheme, ['http', 'https'], true);
+    }
+
+    /**
      * @param  list<string>  $userSkillNames
      * @return array{has_user_skills: bool, percent: int|null, matched: list<string>, missing: list<string>}
      */
     public function skillMatch(array $userSkillNames): array
     {
-        $required = $this->parsedRequiredSkills();
-        $userSkills = array_values(array_filter(array_map(
-            static fn (string $name) => mb_strtolower(trim($name)),
-            $userSkillNames
-        )));
+        $required = $this->relevantSkillNames();
+        $userSkills = $this->uniqueSkillNames($userSkillNames);
+        $normalizedUserSkills = array_map(
+            static fn (string $name) => mb_strtolower($name),
+            $userSkills
+        );
 
-        if ($userSkills === []) {
+        if ($normalizedUserSkills === []) {
             return [
                 'has_user_skills' => false,
                 'percent' => null,
@@ -205,7 +249,7 @@ class Opportunity extends Model
         $missing = [];
 
         foreach ($required as $skill) {
-            if ($this->requiredSkillMatchesUser($skill, $userSkills)) {
+            if ($this->requiredSkillMatchesUser($skill, $normalizedUserSkills)) {
                 $matched[] = $skill;
             } else {
                 $missing[] = $skill;
@@ -218,6 +262,39 @@ class Opportunity extends Model
             'matched' => $matched,
             'missing' => $missing,
         ];
+    }
+
+    /**
+     * @param  list<mixed>  $names
+     * @return list<string>
+     */
+    private function uniqueSkillNames(array $names): array
+    {
+        $unique = [];
+        $seen = [];
+
+        foreach ($names as $name) {
+            if (! is_string($name) && ! is_numeric($name)) {
+                continue;
+            }
+
+            $trimmed = trim((string) $name);
+
+            if ($trimmed === '') {
+                continue;
+            }
+
+            $key = mb_strtolower($trimmed);
+
+            if (isset($seen[$key])) {
+                continue;
+            }
+
+            $seen[$key] = true;
+            $unique[] = $trimmed;
+        }
+
+        return $unique;
     }
 
     /**

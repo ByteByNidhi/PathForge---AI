@@ -56,6 +56,9 @@ Route::middleware(['auth', 'onboarded'])->group(function () {
     Route::post('/roadmaps/{learningPath}/steps/{roadmapStep}/complete', [RoadmapController::class, 'complete'])->name('roadmaps.complete');
 
     Route::get('/opportunities', [OpportunityController::class, 'index'])->name('opportunities.index');
+    Route::get('/opportunities/saved', [OpportunityController::class, 'saved'])->name('opportunities.saved');
+    Route::post('/opportunities/{opportunity}/save', [OpportunityController::class, 'save'])->name('opportunities.save');
+    Route::delete('/opportunities/{opportunity}/save', [OpportunityController::class, 'unsave'])->name('opportunities.unsave');
     Route::get('/opportunities/{opportunity}', [OpportunityController::class, 'show'])->name('opportunities.show');
 });
 

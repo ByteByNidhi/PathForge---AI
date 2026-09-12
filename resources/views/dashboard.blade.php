@@ -99,7 +99,7 @@
                     <p class="muted">{{ $opportunity->organization }} · {{ $opportunity->type }}</p>
                     <p>
                         @if ($opportunity->skill_match['percent'] !== null)
-                            Skill match: {{ $opportunity->skill_match['percent'] }}%
+                            {{ $opportunity->skill_match['percent'] }}% Skill Match
                         @else
                             Add your skills to calculate your match
                         @endif

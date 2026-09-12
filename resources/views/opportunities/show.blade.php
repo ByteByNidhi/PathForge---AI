@@ -29,12 +29,18 @@
                 @elseif ($skillMatch['percent'] === null)
                     Skill match is not available for this opportunity.
                 @else
-                    {{ $skillMatch['percent'] }}%
+                    {{ $skillMatch['percent'] }}% Skill Match
                 @endif
             </dd>
             @if ($skillMatch['has_user_skills'])
                 <dt>Matched skills</dt>
-                <dd>{{ count($skillMatch['matched']) ? implode(', ', $skillMatch['matched']) : 'None' }}</dd>
+                <dd>
+                    @if (count($skillMatch['matched']))
+                        {{ collect($skillMatch['matched'])->map(fn ($skill) => '✓ '.$skill)->implode(', ') }}
+                    @else
+                        No matching skills yet
+                    @endif
+                </dd>
                 <dt>Missing skills</dt>
                 <dd>{{ count($skillMatch['missing']) ? implode(', ', $skillMatch['missing']) : 'None' }}</dd>
             @endif
@@ -47,10 +53,16 @@
                 <dd><a href="https://himalayas.app" target="_blank" rel="noopener noreferrer">Himalayas</a></dd>
             @endif
         </dl>
-        @if ($opportunity->application_url)
-            <a class="btn" href="{{ $opportunity->application_url }}" target="_blank" rel="noopener noreferrer">Apply</a>
-        @else
-            <p class="muted">No application link is available yet.</p>
-        @endif
+        <div class="actions">
+            @if ($opportunity->hasValidApplicationUrl())
+                <a class="btn" href="{{ $opportunity->application_url }}" target="_blank" rel="noopener noreferrer">Apply</a>
+            @else
+                <p class="muted">No application link is available yet.</p>
+            @endif
+            @include('opportunities._save', [
+                'opportunity' => $opportunity,
+                'isSaved' => $isSaved,
+            ])
+        </div>
     </article>
 @endsection

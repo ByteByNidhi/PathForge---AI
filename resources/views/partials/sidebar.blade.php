@@ -19,9 +19,13 @@
             <span class="pf-nav-icon">@include('partials.icon', ['name' => 'path'])</span>
             Roadmaps
         </a>
-        <a href="{{ route('opportunities.index') }}" class="{{ request()->routeIs('opportunities.*') ? 'is-active' : '' }}">
+        <a href="{{ route('opportunities.index') }}" class="{{ request()->routeIs('opportunities.*') && ! request()->routeIs('opportunities.saved') ? 'is-active' : '' }}">
             <span class="pf-nav-icon">@include('partials.icon', ['name' => 'brief'])</span>
             Opportunity Hub
+        </a>
+        <a href="{{ route('opportunities.saved') }}" class="{{ request()->routeIs('opportunities.saved') ? 'is-active' : '' }}">
+            <span class="pf-nav-icon">@include('partials.icon', ['name' => 'brief'])</span>
+            Saved
         </a>
         <a href="{{ route('achievements.index') }}" class="{{ request()->routeIs('achievements.*') ? 'is-active' : '' }}">
             <span class="pf-nav-icon">@include('partials.icon', ['name' => 'award'])</span>

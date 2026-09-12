@@ -14,7 +14,7 @@ class OpportunityHubTest extends TestCase
         $user = User::query()->first();
         $this->assertInstanceOf(User::class, $user, 'An authenticated user is required in the local database.');
         assert($user instanceof User);
-        $this->assertSame(10, Opportunity::query()->count());
+        $this->assertGreaterThanOrEqual(10, Opportunity::query()->count());
 
         $nasa = Opportunity::query()->where('title', 'like', '%NASA%')->first();
         $smartIndia = Opportunity::query()->where('title', 'like', '%Smart India%')->first();

@@ -47,12 +47,14 @@
             @endforeach
         </select>
         <select name="sort" aria-label="Sort opportunities">
+            <option value="match" @selected($sort === 'match')>Highest skill match</option>
             <option value="nearest" @selected($sort === 'nearest')>Nearest deadline</option>
             <option value="latest" @selected($sort === 'latest')>Latest deadline</option>
-            <option value="match" @selected($sort === 'match')>Highest skill match</option>
         </select>
         <button class="btn" type="submit">Apply</button>
     </form>
+
+    <p class="muted"><a href="{{ route('opportunities.saved') }}">Saved opportunities</a></p>
 
     <p id="hub-loading" class="loading">Loading opportunities…</p>
 
@@ -89,16 +91,21 @@
                     @elseif ($match['percent'] === null)
                         Skill match is not available for this opportunity.
                     @else
-                        Skill match: {{ $match['percent'] }}%
+                        {{ $match['percent'] }}% Skill Match
                         @if (count($match['matched']))
-                            · Matched: {{ implode(', ', $match['matched']) }}
-                        @endif
-                        @if (count($match['missing']))
-                            · Missing: {{ implode(', ', $match['missing']) }}
+                            · {{ collect($match['matched'])->map(fn ($skill) => '✓ '.$skill)->implode(' · ') }}
+                        @else
+                            · No matching skills yet
                         @endif
                     @endif
                 </p>
-                <a class="btn" href="{{ route('opportunities.show', $opportunity) }}">View Details</a>
+                <div class="actions">
+                    <a class="btn" href="{{ route('opportunities.show', $opportunity) }}">View Details</a>
+                    @include('opportunities._save', [
+                        'opportunity' => $opportunity,
+                        'isSaved' => in_array($opportunity->id, $savedIds, true),
+                    ])
+                </div>
             </article>
         @endforeach
     @endif
