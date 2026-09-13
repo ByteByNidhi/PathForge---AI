@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CareerPathRequest;
 use App\Models\LearningPath;
 use App\Models\Skill;
 use App\Services\AchievementService;
@@ -24,11 +25,54 @@ class OnboardingController extends Controller
         return view('onboarding.path', [
             'paths' => $paths,
             'selectedPathId' => $request->session()->get('onboarding.path_id'),
+            'otherSelected' => (bool) $request->session()->get('onboarding.other_path'),
+            'requestedPath' => $request->session()->get('onboarding.requested_path'),
         ]);
     }
 
     public function storePath(Request $request): RedirectResponse
     {
+        if ($request->input('path_id') === 'other') {
+            $validated = $request->validate([
+                'path_id' => ['required', 'in:other'],
+                'requested_path' => ['required', 'string', 'max:120'],
+            ], [
+                'requested_path.required' => 'Tell us which other career path you are interested in.',
+            ]);
+
+            $requested = trim($validated['requested_path']);
+
+            if ($requested === '') {
+                return redirect()
+                    ->route('onboarding.show')
+                    ->withErrors(['requested_path' => 'Tell us which other career path you are interested in.']);
+            }
+
+            CareerPathRequest::query()->create([
+                'user_id' => $request->user()->id,
+                'requested_path' => $requested,
+                'status' => CareerPathRequest::STATUS_PENDING,
+            ]);
+
+            $user = $request->user();
+            $user->path_id = null;
+            $user->onboarding_completed = true;
+            $user->save();
+            $user->skills()->sync([]);
+
+            $request->session()->forget([
+                'onboarding.path_id',
+                'onboarding.skill_ids',
+                'onboarding.starting_as',
+                'onboarding.other_path',
+                'onboarding.requested_path',
+            ]);
+
+            return redirect()
+                ->route('dashboard')
+                ->with('success', "Thanks! We've noted your career interest. This path may be added in a future PathForge update.");
+        }
+
         $validated = $request->validate([
             'path_id' => ['required', 'integer', 'exists:learning_paths,id'],
         ]);
@@ -41,6 +85,7 @@ class OnboardingController extends Controller
         }
 
         $request->session()->put('onboarding.path_id', $pathId);
+        $request->session()->forget(['onboarding.other_path', 'onboarding.requested_path']);
 
         return redirect()->route('onboarding.skills');
     }

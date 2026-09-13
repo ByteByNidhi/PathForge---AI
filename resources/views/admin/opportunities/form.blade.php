@@ -47,7 +47,15 @@
 
         <div class="field">
             <label for="deadline">Deadline</label>
-            <input id="deadline" type="date" name="deadline" value="{{ old('deadline', $opportunity->deadline?->toDateString()) }}">
+            <input id="deadline" type="date" name="deadline"
+                   @if($deadlineMin) min="{{ $deadlineMin }}" @endif
+                   @if($deadlineMax) max="{{ $deadlineMax }}" @endif
+                   value="{{ old('deadline', $opportunity->deadline?->toDateString()) }}">
+            @if (!empty($lockExternalDeadline))
+                <p class="muted">This listing was imported from Himalayas. The external deadline is preserved.</p>
+            @elseif ($deadlineMax)
+                <p class="muted">Must be today through {{ \Carbon\Carbon::parse($deadlineMax)->format('M j, Y') }}.</p>
+            @endif
             @error('deadline') <div class="error">{{ $message }}</div> @enderror
         </div>
 

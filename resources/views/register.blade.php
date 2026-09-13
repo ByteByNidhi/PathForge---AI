@@ -9,12 +9,16 @@
             <h1>Register</h1>
             <p class="pf-lede">Create your PathForge AI account.</p>
 
-            <form method="POST" action="{{ url('/register') }}">
+            <form method="POST" action="{{ url('/register') }}" id="register-form">
                 @csrf
                 <div class="pf-field">
                     <label for="name">Full Name</label>
-                    <input id="name" type="text" name="name" value="{{ old('name') }}" required>
+                    <input id="name" type="text" name="name" value="{{ old('name') }}" required
+                           pattern="[A-Za-z]+( [A-Za-z]+)*"
+                           title="Letters only, with spaces between words. No numbers or symbols."
+                           autocomplete="name">
                     @error('name') <div class="pf-error">{{ $message }}</div> @enderror
+                    <p id="name-client-error" class="pf-error" hidden>Use letters only, with spaces between words. Numbers and symbols are not allowed.</p>
                 </div>
                 <div class="pf-field">
                     <label for="email">Email</label>
@@ -35,4 +39,34 @@
             <p class="muted" style="margin-top:16px;">Already have an account? <a href="{{ url('/login') }}">Login</a></p>
         </div>
     </main>
+@endsection
+
+@section('scripts')
+    <script>
+        (function () {
+            var form = document.getElementById('register-form');
+            var nameInput = document.getElementById('name');
+            var error = document.getElementById('name-client-error');
+            if (!form || !nameInput || !error) return;
+
+            function validName(value) {
+                return /^[A-Za-z]+(?: [A-Za-z]+)*$/.test(String(value).trim());
+            }
+
+            function showValidity() {
+                var ok = validName(nameInput.value);
+                error.hidden = ok;
+                nameInput.setCustomValidity(ok ? '' : error.textContent);
+            }
+
+            nameInput.addEventListener('input', showValidity);
+            form.addEventListener('submit', function (event) {
+                showValidity();
+                if (!nameInput.checkValidity()) {
+                    event.preventDefault();
+                    nameInput.reportValidity();
+                }
+            });
+        })();
+    </script>
 @endsection

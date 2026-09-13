@@ -74,7 +74,8 @@ class OnboardingTest extends TestCase
         $response = $this->actingAs($user)
             ->get('/onboarding')
             ->assertOk()
-            ->assertSee('Choose your career path');
+            ->assertSee('Choose your career path')
+            ->assertSee('Other');
 
         foreach ($paths as $pathName) {
             $response->assertSee($pathName);

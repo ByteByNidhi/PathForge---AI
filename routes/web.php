@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\CareerPathRequestController as AdminCareerPathRequestController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\OpportunityController as AdminOpportunityController;
 use App\Http\Controllers\Admin\OrganizationController as AdminOrganizationController;
 use App\Http\Controllers\Admin\RoadmapController as AdminRoadmapController;
+use App\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\AiStudioController;
@@ -115,4 +117,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
+
+    Route::get('/career-path-requests', [AdminCareerPathRequestController::class, 'index'])->name('career-path-requests.index');
+    Route::post('/career-path-requests/review', [AdminCareerPathRequestController::class, 'markReviewed'])->name('career-path-requests.review');
+
+    Route::get('/subscriptions', [AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::get('/subscriptions/{subscription}', [AdminSubscriptionController::class, 'show'])->name('subscriptions.show');
+    Route::post('/subscriptions/{subscription}/upgrade', [AdminSubscriptionController::class, 'upgrade'])->name('subscriptions.upgrade');
 });

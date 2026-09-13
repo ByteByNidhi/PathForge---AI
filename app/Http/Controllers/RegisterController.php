@@ -19,9 +19,17 @@ class RegisterController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[A-Za-z]+(?: [A-Za-z]+)*$/',
+            ],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed'],
+        ], [
+            'name.regex' => 'Use letters only, with spaces between words. Numbers and symbols are not allowed.',
+            'name.required' => 'Please enter your full name.',
         ]);
 
         $user = User::create([

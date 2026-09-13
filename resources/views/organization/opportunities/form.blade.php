@@ -47,7 +47,10 @@
 
         <div class="field">
             <label for="deadline">Deadline</label>
-            <input id="deadline" type="date" name="deadline" value="{{ old('deadline', $opportunity->deadline?->toDateString()) }}">
+            <input id="deadline" type="date" name="deadline"
+                   min="{{ $deadlineMin }}" max="{{ $deadlineMax }}"
+                   value="{{ old('deadline', $opportunity->deadline?->toDateString()) }}">
+            <p class="muted">Must be today through {{ \Carbon\Carbon::parse($deadlineMax)->format('M j, Y') }} (1 year).</p>
             @error('deadline') <div class="error">{{ $message }}</div> @enderror
         </div>
 
@@ -65,12 +68,16 @@
 
         <fieldset class="field">
             <legend>Required skills</legend>
-            <p class="muted">Choose existing PathForge skills. At least one is required.</p>
+            <p class="muted">Optional. Leave this open for hackathons, events, or listings that do not need a specific skill.</p>
             @error('skill_ids') <div class="error">{{ $message }}</div> @enderror
-            <div class="chips" style="display:block;">
+            <label class="chip" style="display:inline-flex;gap:6px;align-items:center;margin-bottom:10px;">
+                <input type="checkbox" name="no_specific_skill" id="no_specific_skill" value="1" @checked($noSpecificSkill)>
+                Open to all / No specific skill required
+            </label>
+            <div class="chips" id="skill-options" style="display:block;">
                 @foreach ($skills as $skill)
                     <label class="chip" style="display:inline-flex;gap:6px;align-items:center;">
-                        <input type="checkbox" name="skill_ids[]" value="{{ $skill->id }}" @checked(in_array($skill->id, array_map('intval', $selectedSkillIds), true))>
+                        <input type="checkbox" name="skill_ids[]" value="{{ $skill->id }}" class="skill-option" @checked(in_array($skill->id, array_map('intval', $selectedSkillIds), true))>
                         {{ $skill->name }}
                     </label>
                 @endforeach
@@ -82,4 +89,29 @@
             <button class="btn" type="submit" name="intent" value="submit">{{ $opportunity->isRejected() ? 'Resubmit for Review' : 'Submit for Review' }}</button>
         </div>
     </form>
+@endsection
+
+@section('scripts')
+    <script>
+        (function () {
+            var openAll = document.getElementById('no_specific_skill');
+            var options = document.querySelectorAll('.skill-option');
+            if (!openAll) return;
+
+            function sync() {
+                options.forEach(function (box) {
+                    box.disabled = openAll.checked;
+                    if (openAll.checked) box.checked = false;
+                });
+            }
+
+            openAll.addEventListener('change', sync);
+            options.forEach(function (box) {
+                box.addEventListener('change', function () {
+                    if (box.checked) openAll.checked = false;
+                });
+            });
+            sync();
+        })();
+    </script>
 @endsection

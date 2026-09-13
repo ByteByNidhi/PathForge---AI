@@ -37,6 +37,9 @@ class OpportunityController extends Controller
         return view('admin.opportunities.form', [
             'opportunity' => new Opportunity,
             'types' => HubOpportunityController::TYPES,
+            'deadlineMin' => now()->toDateString(),
+            'deadlineMax' => now()->addYears(2)->toDateString(),
+            'lockExternalDeadline' => false,
         ]);
     }
 
@@ -148,9 +151,16 @@ class OpportunityController extends Controller
             $types[] = $opportunity->type;
         }
 
+        $isHimalayas = $opportunity->source === Opportunity::SOURCE_HIMALAYAS;
+
         return view('admin.opportunities.form', [
             'opportunity' => $opportunity,
             'types' => $types,
+            'deadlineMin' => $isHimalayas ? null : now()->toDateString(),
+            'deadlineMax' => $isHimalayas
+                ? null
+                : now()->addYears($opportunity->source === Opportunity::SOURCE_ORGANIZATION ? 1 : 2)->toDateString(),
+            'lockExternalDeadline' => $isHimalayas,
         ]);
     }
 
@@ -182,6 +192,20 @@ class OpportunityController extends Controller
             $types[] = $opportunity->type;
         }
 
+        $isHimalayas = $opportunity?->source === Opportunity::SOURCE_HIMALAYAS;
+        $deadlineRules = ['nullable', 'date'];
+        $messages = [];
+
+        if (! $isHimalayas) {
+            $maxYears = $opportunity?->source === Opportunity::SOURCE_ORGANIZATION ? 1 : 2;
+            $deadlineRules[] = 'after_or_equal:today';
+            $deadlineRules[] = 'before_or_equal:'.now()->addYears($maxYears)->toDateString();
+            $messages['deadline.after_or_equal'] = 'The deadline must be today or later.';
+            $messages['deadline.before_or_equal'] = $maxYears === 1
+                ? 'Organization opportunity deadlines cannot be more than 1 year from today.'
+                : 'Manual opportunity deadlines cannot be more than 2 years from today.';
+        }
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'organization' => ['required', 'string', 'max:255'],
@@ -189,10 +213,10 @@ class OpportunityController extends Controller
             'description' => ['nullable', 'string'],
             'required_skills' => ['nullable', 'string'],
             'eligibility' => ['nullable', 'string'],
-            'deadline' => ['nullable', 'date'],
+            'deadline' => $deadlineRules,
             'application_url' => ['required', 'url', 'max:2048'],
             'location' => ['nullable', 'string', 'max:255'],
-        ]);
+        ], $messages);
 
         $validated['deadline'] = $validated['deadline'] ?: null;
 

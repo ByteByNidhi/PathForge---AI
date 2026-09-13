@@ -199,7 +199,7 @@ button:disabled {
 /* Forms */
 .pf-field,
 .field {
-    margin-bottom: 14px;
+    margin-bottom: 18px;
 }
 
 .pf-label,
@@ -230,6 +230,7 @@ textarea {
     background: rgba(255, 255, 255, 0.03);
     color: var(--pf-text);
     outline: none;
+    color-scheme: dark;
 }
 
 input:focus,
@@ -243,7 +244,8 @@ textarea:focus {
 .error {
     color: var(--pf-danger);
     font-size: 0.86rem;
-    margin: 6px 0 0;
+    margin: 8px 0 0;
+    line-height: 1.45;
 }
 
 .pf-flash,
@@ -414,6 +416,7 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     gap: 18px;
+    overflow-y: auto;
 }
 
 .pf-nav {
@@ -633,8 +636,13 @@ textarea:focus {
 .progress-bar {
     display: block;
     height: 100%;
+    width: var(--pf-fill, 0%);
     background: linear-gradient(90deg, var(--pf-accent-2), var(--pf-accent));
     border-radius: inherit;
+}
+
+.pf-progress--spaced {
+    margin: 10px 0 8px;
 }
 
 .progress-wrap {
@@ -960,6 +968,24 @@ th, td {
     vertical-align: top;
 }
 
+.pf-meta {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 8px 16px;
+    margin: 18px 0 24px;
+}
+
+.pf-meta dt {
+    color: var(--pf-muted);
+    font-size: 0.82rem;
+    font-weight: 650;
+}
+
+.pf-meta dd {
+    margin: 0;
+    color: var(--pf-text);
+}
+
 th {
     background: rgba(255, 255, 255, 0.03);
     color: var(--pf-muted);
@@ -985,7 +1011,7 @@ th {
 .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
+    gap: 14px;
     margin: 16px 0 24px;
 }
 

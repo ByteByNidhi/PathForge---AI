@@ -22,7 +22,7 @@
             </div>
             <div>
                 <p class="muted">Progress to next level</p>
-                <div class="pf-progress" style="margin:10px 0 8px;"><span style="width: {{ $xpIntoLevel }}%;"></span></div>
+                <div class="pf-progress pf-progress--spaced" @style(['--pf-fill' => ((int) $xpIntoLevel).'%'])><span></span></div>
                 <p class="muted">{{ $xpIntoLevel }} / 100 XP in this level</p>
                 <div class="actions">
                     <a class="btn" href="{{ url('/ai-studio') }}">Open AI Studio</a>
@@ -56,7 +56,7 @@
                 <p>{{ $path->path_name }}</p>
                 <p class="muted">{{ $completedSteps }} / {{ $totalSteps }} steps complete</p>
                 <div class="progress-wrap">
-                    <div class="progress-bar" style="width: {{ $progressPercent }}%;"></div>
+                    <div class="progress-bar" @style(['--pf-fill' => ((int) $progressPercent).'%'])></div>
                 </div>
                 <a class="btn" href="{{ route('roadmaps.show', $path) }}">Continue Roadmap</a>
             @else

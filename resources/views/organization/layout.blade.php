@@ -46,5 +46,6 @@
         </div>
     </div>
     <script src="{{ asset('js/pathforge-atmosphere.js') }}"></script>
+    @yield('scripts')
 </body>
 </html>

@@ -20,6 +20,8 @@
                 <a href="{{ route('admin.organizations.index') }}" class="{{ request()->routeIs('admin.organizations.*') ? 'is-active' : '' }}">Organizations</a>
                 <a href="{{ route('admin.roadmaps.index') }}" class="{{ request()->routeIs('admin.roadmaps.*') ? 'is-active' : '' }}">Roadmaps</a>
                 <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}">Users</a>
+                <a href="{{ route('admin.career-path-requests.index') }}" class="{{ request()->routeIs('admin.career-path-requests.*') ? 'is-active' : '' }}">Career Path Requests</a>
+                <a href="{{ route('admin.subscriptions.index') }}" class="{{ request()->routeIs('admin.subscriptions.*') ? 'is-active' : '' }}">Subscriptions</a>
             </nav>
             <div class="pf-sidebar__foot">
                 <form method="POST" action="{{ route('logout') }}">
@@ -34,6 +36,9 @@
             @endif
             @if (session('error'))
                 <div class="pf-flash pf-flash--error">{{ session('error') }}</div>
+            @endif
+            @if ($errors->any())
+                <div class="pf-flash pf-flash--error">{{ $errors->first() }}</div>
             @endif
             @yield('content')
         </div>

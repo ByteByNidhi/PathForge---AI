@@ -41,6 +41,9 @@ class OpportunityController extends Controller
             'types' => HubOpportunityController::TYPES,
             'skills' => Skill::query()->orderBy('name')->get(),
             'selectedSkillIds' => old('skill_ids', []),
+            'noSpecificSkill' => (bool) old('no_specific_skill', false),
+            'deadlineMin' => now()->toDateString(),
+            'deadlineMax' => now()->addYear()->toDateString(),
         ]);
     }
 
@@ -51,14 +54,14 @@ class OpportunityController extends Controller
 
         $validated = $this->validated($request);
         $intent = $this->intent($request);
-        $skillIds = $this->uniqueSkillIds($validated['skill_ids']);
+        $skillIds = $this->resolvedSkillIds($validated);
 
         $opportunity = $organization->opportunities()->create([
             'title' => $validated['title'],
             'organization' => $organization->name,
             'type' => $validated['type'],
             'description' => $validated['description'],
-            'required_skills' => $this->skillNames($skillIds),
+            'required_skills' => $this->skillNames($skillIds) ?: null,
             'eligibility' => $validated['eligibility'] ?? null,
             'deadline' => $validated['deadline'] ?: null,
             'application_url' => $validated['application_url'] ?? null,
@@ -105,6 +108,12 @@ class OpportunityController extends Controller
             'types' => HubOpportunityController::TYPES,
             'skills' => Skill::query()->orderBy('name')->get(),
             'selectedSkillIds' => old('skill_ids', $opportunity->skills->pluck('id')->all()),
+            'noSpecificSkill' => (bool) old(
+                'no_specific_skill',
+                $opportunity->skills->isEmpty() && blank($opportunity->required_skills)
+            ),
+            'deadlineMin' => now()->toDateString(),
+            'deadlineMax' => now()->addYear()->toDateString(),
         ]);
     }
 
@@ -113,7 +122,7 @@ class OpportunityController extends Controller
         $this->authorize('updateOrganization', $opportunity);
 
         $validated = $this->validated($request);
-        $skillIds = $this->uniqueSkillIds($validated['skill_ids']);
+        $skillIds = $this->resolvedSkillIds($validated);
         $intent = $this->intent($request);
         $organization = $this->organization();
 
@@ -130,7 +139,7 @@ class OpportunityController extends Controller
             'organization' => $organization->name,
             'type' => $validated['type'],
             'description' => $validated['description'],
-            'required_skills' => $this->skillNames($skillIds),
+            'required_skills' => $this->skillNames($skillIds) ?: null,
             'eligibility' => $validated['eligibility'] ?? null,
             'deadline' => $validated['deadline'] ?: null,
             'application_url' => $validated['application_url'] ?? null,
@@ -186,13 +195,22 @@ class OpportunityController extends Controller
             'type' => ['required', 'string', 'in:'.implode(',', HubOpportunityController::TYPES)],
             'description' => ['required', 'string'],
             'location' => ['nullable', 'string', 'max:255'],
-            'deadline' => ['nullable', 'date'],
+            'deadline' => [
+                'nullable',
+                'date',
+                'after_or_equal:today',
+                'before_or_equal:'.now()->addYear()->toDateString(),
+            ],
             'application_url' => ['nullable', 'url', 'max:2048'],
             'eligibility' => ['nullable', 'string', 'max:5000'],
-            'skill_ids' => ['required', 'array', 'min:1'],
+            'skill_ids' => ['nullable', 'array'],
             'skill_ids.*' => ['integer', 'exists:skills,id'],
+            'no_specific_skill' => ['nullable', 'boolean'],
             'approval_status' => ['prohibited'],
             'organization_id' => ['prohibited'],
+        ], [
+            'deadline.after_or_equal' => 'The deadline must be today or later.',
+            'deadline.before_or_equal' => 'Organization opportunity deadlines cannot be more than 1 year from today.',
         ]);
 
         if (! empty($validated['application_url'])) {
@@ -210,6 +228,19 @@ class OpportunityController extends Controller
     private function intent(Request $request): string
     {
         return $request->input('intent') === 'submit' ? 'submit' : 'draft';
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return list<int>
+     */
+    private function resolvedSkillIds(array $validated): array
+    {
+        if (! empty($validated['no_specific_skill'])) {
+            return [];
+        }
+
+        return $this->uniqueSkillIds($validated['skill_ids'] ?? []);
     }
 
     /**

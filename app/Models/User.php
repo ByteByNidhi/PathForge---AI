@@ -128,6 +128,11 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function careerPathRequests(): HasMany
+    {
+        return $this->hasMany(CareerPathRequest::class);
+    }
+
     public function savedOpportunities(): BelongsToMany
     {
         return $this->belongsToMany(Opportunity::class, 'saved_opportunities')

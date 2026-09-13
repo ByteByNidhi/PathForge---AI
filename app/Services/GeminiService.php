@@ -14,6 +14,41 @@ class GeminiService
 
     public function generateReply(User $user, string $message, array $history = []): string
     {
+        return $this->generateFromContents(
+            $this->systemPrompt($user),
+            $this->buildContents($history, $message),
+            [
+                'temperature' => 0.7,
+                'maxOutputTokens' => 1024,
+            ]
+        );
+    }
+
+    /**
+     * Generate a single-turn completion using the shared Gemini configuration.
+     *
+     * @param  array<string, mixed>  $generationConfig
+     */
+    public function generateText(string $systemPrompt, string $userMessage, array $generationConfig = []): string
+    {
+        return $this->generateFromContents(
+            $systemPrompt,
+            [
+                [
+                    'role' => 'user',
+                    'parts' => [['text' => $userMessage]],
+                ],
+            ],
+            $generationConfig
+        );
+    }
+
+    /**
+     * @param  list<array{role: string, parts: list<array{text: string}>}>  $contents
+     * @param  array<string, mixed>  $generationConfig
+     */
+    private function generateFromContents(string $systemPrompt, array $contents, array $generationConfig = []): string
+    {
         $apiKey = (string) config('services.gemini.api_key');
         $model = (string) config('services.gemini.model', 'gemini-3.6-flash');
         $baseUrl = rtrim((string) config('services.gemini.base_url'), '/');
@@ -27,7 +62,18 @@ class GeminiService
 
         $url = $baseUrl.'/models/'.$model.':generateContent';
 
-        $contents = $this->buildContents($history, $message);
+        $payload = [
+            'systemInstruction' => [
+                'parts' => [
+                    ['text' => $systemPrompt],
+                ],
+            ],
+            'contents' => $contents,
+            'generationConfig' => array_merge([
+                'temperature' => 0.7,
+                'maxOutputTokens' => 1024,
+            ], $generationConfig),
+        ];
 
         try {
             $response = Http::timeout($timeout)
@@ -35,18 +81,7 @@ class GeminiService
                 ->withHeaders([
                     'x-goog-api-key' => $apiKey,
                 ])
-                ->post($url, [
-                    'systemInstruction' => [
-                        'parts' => [
-                            ['text' => $this->systemPrompt($user)],
-                        ],
-                    ],
-                    'contents' => $contents,
-                    'generationConfig' => [
-                        'temperature' => 0.7,
-                        'maxOutputTokens' => 1024,
-                    ],
-                ]);
+                ->post($url, $payload);
         } catch (RequestException $e) {
             report($e);
 
