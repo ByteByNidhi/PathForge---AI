@@ -205,8 +205,8 @@ input::placeholder, textarea::placeholder { color: #93a097; opacity: 1; }
 
 select,
 select.pf-select {
-    appearance: none;
     -webkit-appearance: none;
+    appearance: none;
     background-color: var(--pf-control-bg);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6.2L8 10.2L12 6.2' stroke='%238ed4b0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -372,20 +372,23 @@ body.pf-body .choices select[hidden] {
     display: grid;
     grid-template-columns: var(--pf-sidebar) 1fr;
 }
-.pf-sidebar .pf-wordmark {
-    font-size: 1rem;
-    letter-spacing: 0.16em;
-}
+.pf-sidebar {
+    position: sticky;
     top: 0;
     height: 100vh;
     padding: 24px 16px;
     border-right: 1px solid var(--pf-line);
     background: rgba(8, 11, 15, 0.86);
+    -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     display: flex;
     flex-direction: column;
     gap: 20px;
     overflow-y: auto;
+}
+.pf-sidebar .pf-wordmark {
+    font-size: 1rem;
+    letter-spacing: 0.16em;
 }
 .pf-nav { display: flex; flex-direction: column; gap: 6px; }
 .pf-nav a, .pf-nav-link {
@@ -1161,7 +1164,7 @@ th {
     .pf-path { flex-wrap: wrap; padding: 28px 16px; }
     .pf-path div { width: 33%; margin-bottom: 16px; }
     .pf-join__form, .pf-join__aside, .pf-auth-split__brand, .pf-auth-split__form { padding: 28px 20px; }
-    .pf-hero--brand { padding: 12px 0 48px; min-height: auto; }
+    .pf-hero--brand { padding: 12px 0 48px; min-height: unset; }
     .pf-section { padding: 64px 0; }
     .pf-wrap { width: min(1180px, calc(100% - 28px)); }
 }
