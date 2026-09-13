@@ -4,7 +4,7 @@
 
 @section('content')
     <h2>{{ $opportunity->exists ? 'Edit opportunity' : 'Create opportunity' }}</h2>
-    <p>Save as a draft or submit for admin review. Students only see approved listings.</p>
+    <p>Save as a draft or submit for admin review. Users only see approved listings.</p>
 
     <div class="actions">
         <a class="btn btn-secondary" href="{{ route('organization.opportunities.index') }}">Back</a>

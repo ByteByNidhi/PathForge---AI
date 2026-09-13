@@ -3,11 +3,11 @@
 @section('title', 'Confirm onboarding')
 
 @section('content')
-    <main class="pf-guest">
-        <div class="pf-onboard">
-            <div class="pf-step">Step 3 of 3</div>
+    <main class="pf-confirm-page">
+        <div class="pf-dialog">
+            <p class="pf-step">Step 3 of 3</p>
             <h1>Confirm your setup</h1>
-            <p class="pf-lede">Review your career path and skills, then start your dashboard.</p>
+            <p class="muted">Review your career path and skills, then start your dashboard.</p>
             <dl>
                 <dt>Career path</dt>
                 <dd>{{ $path->path_name }}</dd>
@@ -26,7 +26,7 @@
                     @endif
                 </dd>
             </dl>
-            <div class="actions">
+            <div class="pf-modal__actions">
                 <a class="btn btn-secondary" href="{{ route('onboarding.skills') }}">Back</a>
                 <form method="POST" action="{{ route('onboarding.complete') }}">
                     @csrf

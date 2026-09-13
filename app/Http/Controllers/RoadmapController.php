@@ -37,7 +37,7 @@ class RoadmapController extends Controller
 
     public function show(LearningPath $learningPath): View
     {
-        $steps = $learningPath->roadmapSteps()
+        $steps = $learningPath->publishedRoadmapSteps()
             ->with('skills')
             ->orderBy('step_no')
             ->orderBy('id')
@@ -65,7 +65,7 @@ class RoadmapController extends Controller
 
     public function complete(Request $request, LearningPath $learningPath, RoadmapStep $roadmapStep): RedirectResponse
     {
-        if ((int) $roadmapStep->path_id !== (int) $learningPath->id) {
+        if ((int) $roadmapStep->path_id !== (int) $learningPath->id || ! $roadmapStep->is_published) {
             abort(404);
         }
 

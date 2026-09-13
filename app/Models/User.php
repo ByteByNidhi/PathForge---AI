@@ -176,7 +176,7 @@ class User extends Authenticatable
 
         $completedIds = $this->completedRoadmapStepIds($path);
 
-        return $path->roadmapSteps()
+        return $path->publishedRoadmapSteps()
             ->orderBy('step_no')
             ->orderBy('id')
             ->get()
@@ -205,7 +205,7 @@ class User extends Authenticatable
             return collect();
         }
 
-        $stepIds = $path->roadmapSteps()->pluck('id');
+        $stepIds = $path->publishedRoadmapSteps()->pluck('id');
 
         return $this->userProgress()
             ->whereIn('roadmap_step_id', $stepIds)

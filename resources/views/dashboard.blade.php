@@ -93,8 +93,9 @@
 
         <section class="pf-card pf-span-2">
             <h2>Recommended opportunities</h2>
+            <div class="pf-hub-grid">
             @forelse ($recommendedOpportunities as $opportunity)
-                <article class="item" style="margin-bottom:12px;">
+                <article class="item">
                     <h3 style="margin:0 0 6px;">{{ $opportunity->title }}</h3>
                     <p class="muted">{{ $opportunity->organization }} · {{ $opportunity->type }}</p>
                     <p>
@@ -109,6 +110,7 @@
             @empty
                 <p class="muted">No opportunities available yet.</p>
             @endforelse
+            </div>
             <a class="btn btn-secondary" href="{{ route('opportunities.index') }}">Opportunity Hub</a>
         </section>
 

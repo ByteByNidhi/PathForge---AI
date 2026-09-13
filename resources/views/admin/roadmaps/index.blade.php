@@ -4,7 +4,7 @@
 
 @section('content')
     <h2>Career paths</h2>
-    <p>Open a path to view and manage its roadmap steps. User progress is kept when you edit a step.</p>
+    <p>Open a path to view curated steps or generate an AI draft. Users only see published steps.</p>
 
     @if ($paths->isEmpty())
         <p class="muted">No career paths found.</p>
@@ -13,7 +13,9 @@
             <thead>
                 <tr>
                     <th>Path</th>
-                    <th>Steps</th>
+                    <th>Source</th>
+                    <th>Published steps</th>
+                    <th>AI draft</th>
                     <th></th>
                 </tr>
             </thead>
@@ -26,8 +28,22 @@
                                 <div class="muted">{{ $path->description }}</div>
                             @endif
                         </td>
-                        <td>{{ $path->roadmap_steps_count }}</td>
-                        <td><a href="{{ route('admin.roadmaps.show', $path) }}">Manage steps</a></td>
+                        <td>
+                            @if ($path->isAiGenerated())
+                                <span class="badge">AI-generated</span>
+                            @else
+                                <span class="badge">Curated</span>
+                            @endif
+                        </td>
+                        <td>{{ $path->published_roadmap_steps_count }}</td>
+                        <td>
+                            @if ($path->draft_roadmap_steps_count > 0)
+                                {{ $path->draft_roadmap_steps_count }} pending review
+                            @else
+                                <span class="muted">None</span>
+                            @endif
+                        </td>
+                        <td><a href="{{ route('admin.roadmaps.show', $path) }}">Manage</a></td>
                     </tr>
                 @endforeach
             </tbody>

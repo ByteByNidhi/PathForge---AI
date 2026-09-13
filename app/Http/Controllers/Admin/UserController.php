@@ -28,7 +28,7 @@ class UserController extends Controller
         $totalSteps = 0;
 
         if ($user->learningPath) {
-            $stepIds = $user->learningPath->roadmapSteps()->pluck('id');
+            $stepIds = $user->learningPath->publishedRoadmapSteps()->pluck('id');
             $totalSteps = $stepIds->count();
             $completedSteps = $user->userProgress()
                 ->whereIn('roadmap_step_id', $stepIds)

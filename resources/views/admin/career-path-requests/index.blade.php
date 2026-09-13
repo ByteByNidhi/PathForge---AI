@@ -15,7 +15,7 @@
                     <div class="label">{{ $group->requested_path }}</div>
                     <div class="value">{{ $group->request_count }}</div>
                     <p class="muted" style="margin-top:8px;">
-                        Requested by: {{ $group->request_count }} {{ $group->request_count === 1 ? 'student' : 'students' }}
+                        Requested by: {{ $group->request_count }} {{ $group->request_count === 1 ? 'user' : 'users' }}
                     </p>
                     <p class="muted">
                         Status: {{ $group->pending_count > 0 ? 'Pending' : 'Reviewed' }}

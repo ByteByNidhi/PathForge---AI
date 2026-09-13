@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,9 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    @include('partials.pf-assets')
     <link rel="stylesheet" href="{{ asset('css/pathforge.css') }}">
     @yield('head')
 </head>
+
 <body class="pf-body">
     @include('partials.atmosphere', ['density' => 'calm'])
     <div class="pf-app">
@@ -21,19 +24,21 @@
                     <p class="pf-kicker">@yield('kicker', 'PathForge')</p>
                     <h1>@yield('heading')</h1>
                     @hasSection('lede')
-                        <p class="pf-lede">@yield('lede')</p>
+                    <p class="pf-lede">@yield('lede')</p>
                     @endif
                 </div>
                 <button class="pf-menu-toggle" type="button" data-pf-menu aria-label="Open navigation">☰</button>
             </div>
             @if (session('success'))
-                <div class="pf-flash">{{ session('success') }}</div>
+            <div class="pf-flash">{{ session('success') }}</div>
             @endif
             @yield('content')
         </div>
     </div>
+    @include('partials.confirm-dialog')
     <script src="{{ asset('js/pathforge-atmosphere.js') }}"></script>
-    <script src="{{ asset('js/pathforge-ui.js') }}"></script>
+    @include('partials.pf-scripts')
     @yield('scripts')
 </body>
+
 </html>

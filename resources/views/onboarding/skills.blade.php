@@ -3,8 +3,8 @@
 @section('title', 'Add your skills')
 
 @section('content')
-    <main class="pf-guest">
-        <div class="pf-onboard">
+    <main class="pf-onboard-flow">
+        <div>
             <div class="pf-step">Step 2 of 3</div>
             <h1>How are you starting?</h1>
             <p class="pf-lede">Either path is a good start. You can always add skills later from your profile.</p>

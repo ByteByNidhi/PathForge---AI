@@ -8,7 +8,7 @@
 @endphp
 
 <aside class="pf-sidebar">
-    <a class="pf-brand" href="{{ url('/dashboard') }}">Path<span>Forge</span></a>
+    <a class="pf-wordmark" href="{{ url('/dashboard') }}">Path<span>Forge</span></a>
 
     <nav class="pf-nav" aria-label="Primary">
         <a href="{{ url('/dashboard') }}" class="{{ request()->is('dashboard') ? 'is-active' : '' }}">

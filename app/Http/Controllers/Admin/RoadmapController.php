@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\RoadmapGenerationException;
 use App\Http\Controllers\Controller;
 use App\Models\LearningPath;
 use App\Models\RoadmapStep;
+use App\Services\RoadmapGenerationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,7 +16,11 @@ class RoadmapController extends Controller
     public function index(): View
     {
         $paths = LearningPath::query()
-            ->withCount('roadmapSteps')
+            ->withCount([
+                'roadmapSteps',
+                'publishedRoadmapSteps',
+                'draftRoadmapSteps',
+            ])
             ->orderBy('path_name')
             ->get();
 
@@ -25,7 +31,13 @@ class RoadmapController extends Controller
 
     public function show(LearningPath $learningPath): View
     {
-        $steps = $learningPath->roadmapSteps()
+        $steps = $learningPath->publishedRoadmapSteps()
+            ->with('skills')
+            ->orderBy('step_no')
+            ->orderBy('id')
+            ->get();
+
+        $draftSteps = $learningPath->draftRoadmapSteps()
             ->orderBy('step_no')
             ->orderBy('id')
             ->get();
@@ -33,12 +45,68 @@ class RoadmapController extends Controller
         return view('admin.roadmaps.show', [
             'path' => $learningPath,
             'steps' => $steps,
+            'draftSteps' => $draftSteps,
+            'hasStudentProgress' => $learningPath->hasLiveStudentProgress(),
+            'isBeginnerPath' => $learningPath->skills()->doesntExist(),
         ]);
+    }
+
+    public function generate(Request $request, LearningPath $learningPath, RoadmapGenerationService $generator): RedirectResponse
+    {
+        $beginner = $request->boolean('beginner') || $learningPath->skills()->doesntExist();
+
+        try {
+            $generator->generateDraft($learningPath, $beginner);
+        } catch (RoadmapGenerationException $e) {
+            return redirect()
+                ->route('admin.roadmaps.show', $learningPath)
+                ->with('error', $e->getMessage());
+        }
+
+        return redirect()
+            ->route('admin.roadmaps.preview', $learningPath)
+            ->with('success', 'AI draft generated. Review it before publishing. Users cannot see this draft.');
+    }
+
+    public function preview(LearningPath $learningPath): View|RedirectResponse
+    {
+        $draftSteps = $learningPath->draftRoadmapSteps()
+            ->with('skills')
+            ->orderBy('step_no')
+            ->orderBy('id')
+            ->get();
+
+        if ($draftSteps->isEmpty()) {
+            return redirect()
+                ->route('admin.roadmaps.show', $learningPath)
+                ->with('error', 'There is no AI draft to preview. Generate a roadmap first.');
+        }
+
+        return view('admin.roadmaps.preview', [
+            'path' => $learningPath,
+            'draftSteps' => $draftSteps,
+            'hasStudentProgress' => $learningPath->hasLiveStudentProgress(),
+        ]);
+    }
+
+    public function publish(LearningPath $learningPath, RoadmapGenerationService $generator): RedirectResponse
+    {
+        try {
+            $generator->publishDraft($learningPath);
+        } catch (RoadmapGenerationException $e) {
+            return redirect()
+                ->route('admin.roadmaps.preview', $learningPath)
+                ->with('error', $e->getMessage());
+        }
+
+        return redirect()
+            ->route('admin.roadmaps.show', $learningPath)
+            ->with('success', 'AI roadmap published. Users can now see these steps.');
     }
 
     public function createStep(LearningPath $learningPath): View
     {
-        $nextStepNo = ((int) $learningPath->roadmapSteps()->max('step_no')) + 1;
+        $nextStepNo = ((int) $learningPath->publishedRoadmapSteps()->max('step_no')) + 1;
 
         return view('admin.roadmaps.step-form', [
             'path' => $learningPath,
@@ -53,6 +121,7 @@ class RoadmapController extends Controller
     {
         $validated = $this->validatedStep($request);
         $validated['path_id'] = $learningPath->id;
+        $validated['is_published'] = true;
 
         RoadmapStep::query()->create($validated);
 

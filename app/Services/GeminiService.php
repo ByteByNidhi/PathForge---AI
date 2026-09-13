@@ -44,6 +44,29 @@ class GeminiService
     }
 
     /**
+     * Generate a JSON-only completion using Gemini's structured JSON response mode.
+     *
+     * @param  array<string, mixed>  $generationConfig
+     */
+    public function generateJson(string $systemPrompt, string $userMessage, array $generationConfig = []): string
+    {
+        return $this->generateFromContents(
+            $systemPrompt,
+            [
+                [
+                    'role' => 'user',
+                    'parts' => [['text' => $userMessage]],
+                ],
+            ],
+            array_merge([
+                'temperature' => 0.2,
+                'maxOutputTokens' => 8192,
+                'responseMimeType' => 'application/json',
+            ], $generationConfig)
+        );
+    }
+
+    /**
      * @param  list<array{role: string, parts: list<array{text: string}>}>  $contents
      * @param  array<string, mixed>  $generationConfig
      */
@@ -145,7 +168,7 @@ class GeminiService
 
     private function systemPrompt(User $user): string
     {
-        $user->loadMissing(['learningPath.roadmapSteps', 'skills', 'userProgress']);
+        $user->loadMissing(['learningPath.publishedRoadmapSteps', 'skills', 'userProgress']);
 
         $path = $user->learningPath;
         $pathName = $path?->path_name ?? 'None selected yet';
@@ -173,7 +196,7 @@ class GeminiService
                 ->pluck('roadmap_step_id')
                 ->all();
 
-            foreach ($path->roadmapSteps->sortBy('step_no') as $step) {
+            foreach ($path->publishedRoadmapSteps->sortBy('step_no') as $step) {
                 $label = 'Step '.$step->step_no.': '.$step->title;
                 if (in_array($step->id, $completedIds, true)) {
                     $completed[] = $label;

@@ -3,8 +3,8 @@
 @section('title', 'Choose your career path')
 
 @section('content')
-    <main class="pf-guest">
-        <div class="pf-onboard">
+    <main class="pf-onboard-flow">
+        <div>
             <div class="pf-step">Step 1 of 3</div>
             <h1>Choose your career path</h1>
             <p class="pf-lede">Select one primary path. This becomes your dashboard roadmap.</p>

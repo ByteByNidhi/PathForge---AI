@@ -105,6 +105,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/roadmaps', [AdminRoadmapController::class, 'index'])->name('roadmaps.index');
     Route::get('/roadmaps/{learningPath}', [AdminRoadmapController::class, 'show'])->name('roadmaps.show');
+    Route::post('/roadmaps/{learningPath}/generate', [AdminRoadmapController::class, 'generate'])->name('roadmaps.generate');
+    Route::get('/roadmaps/{learningPath}/preview', [AdminRoadmapController::class, 'preview'])->name('roadmaps.preview');
+    Route::post('/roadmaps/{learningPath}/publish', [AdminRoadmapController::class, 'publish'])->name('roadmaps.publish');
     Route::get('/roadmaps/{learningPath}/steps/create', [AdminRoadmapController::class, 'createStep'])->name('roadmaps.steps.create');
     Route::post('/roadmaps/{learningPath}/steps', [AdminRoadmapController::class, 'storeStep'])->name('roadmaps.steps.store');
     Route::get('/roadmaps/{learningPath}/steps/{roadmapStep}/edit', [AdminRoadmapController::class, 'editStep'])->name('roadmaps.steps.edit');

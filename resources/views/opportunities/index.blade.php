@@ -65,13 +65,14 @@
     @elseif ($opportunities->isEmpty())
         <p class="state">No opportunities match your filters.</p>
     @else
+        <div class="pf-hub-grid">
         @foreach ($opportunities as $opportunity)
             @php
                 $match = $opportunity->skill_match;
                 $status = $opportunity->deadline_status;
                 $badgeClass = $status === 'closed' ? 'badge-closed' : ($status === 'closing_soon' ? 'badge-closing' : 'badge-open');
             @endphp
-            <article class="pf-card item" style="margin-bottom:12px;">
+            <article class="pf-card item">
                 <h2>
                     {{ $opportunity->title }}
                     <span class="badge {{ $badgeClass }}">{{ $opportunity->deadline_status_label }}</span>
@@ -108,6 +109,7 @@
                 </div>
             </article>
         @endforeach
+    </div>
     @endif
 @endsection
 

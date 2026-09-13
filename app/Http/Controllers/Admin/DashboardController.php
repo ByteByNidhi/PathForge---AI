@@ -17,7 +17,7 @@ class DashboardController extends Controller
         $totalUsers = User::query()->count();
         $totalOpportunities = Opportunity::query()->count();
         $totalCareerPaths = LearningPath::query()->count();
-        $totalRoadmapSteps = RoadmapStep::query()->count();
+        $totalRoadmapSteps = RoadmapStep::query()->where('is_published', true)->count();
 
         $usersWithRoadmap = User::query()->whereNotNull('path_id')->count();
         $adminCount = User::query()->where('is_admin', true)->count();

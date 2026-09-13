@@ -53,7 +53,7 @@
                                 </select>
                                 <button class="btn" type="submit">Update</button>
                             </form>
-                            <form class="inline-form" method="POST" action="{{ route('organization.members.destroy', $member) }}" onsubmit="return confirm('Remove this member?');">
+                            <form class="inline-form" method="POST" action="{{ route('organization.members.destroy', $member) }}" data-pf-confirm="Remove this member?">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-danger" type="submit">Remove</button>

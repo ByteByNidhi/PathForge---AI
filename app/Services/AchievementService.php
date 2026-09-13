@@ -126,7 +126,7 @@ class AchievementService
             return 0;
         }
 
-        $stepIds = $path->roadmapSteps()->pluck('id');
+        $stepIds = $path->publishedRoadmapSteps()->pluck('id');
         $total = $stepIds->count();
 
         if ($total === 0) {

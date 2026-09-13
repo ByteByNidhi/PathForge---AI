@@ -20,7 +20,7 @@ class DashboardController extends Controller
         $recentCompletions = collect();
 
         if ($path) {
-            $steps = $path->roadmapSteps()->orderBy('step_no')->get();
+            $steps = $path->publishedRoadmapSteps()->orderBy('step_no')->get();
             $totalSteps = $steps->count();
             $progressRecords = $user->userProgress()
                 ->whereIn('roadmap_step_id', $steps->pluck('id'))

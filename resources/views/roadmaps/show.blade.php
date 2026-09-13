@@ -6,6 +6,7 @@
 @section('lede', $path->description)
 
 @section('content')
+    <div class="pf-roadmap-track">
     @if ($isSelected)
         <p class="done">This is your selected roadmap.</p>
     @else
@@ -20,8 +21,11 @@
             $progress = $progressByStepId[$step->id] ?? null;
             $completed = $progress && $progress->status === 'completed';
         @endphp
-        <article class="pf-card step" style="margin-bottom:12px;">
+        <article class="pf-card step">
             <h2>Step {{ $step->step_no }}: {{ $step->title }}</h2>
+            @if ($step->description)
+                <p>{{ $step->description }}</p>
+            @endif
             <p class="meta muted">XP reward: {{ $step->xp_reward }}</p>
             @if ($step->skills->isNotEmpty())
                 <div class="chips">
@@ -46,4 +50,5 @@
     @empty
         <p>This roadmap has no steps yet.</p>
     @endforelse
+    </div>
 @endsection

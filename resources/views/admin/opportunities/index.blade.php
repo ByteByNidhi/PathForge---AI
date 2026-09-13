@@ -12,7 +12,7 @@
 
     <section class="pf-card" style="margin: 20px 0;">
         <h3 style="margin-top:0;">Opportunity Intelligence</h3>
-        <p class="muted">Fetch a small batch of remote jobs from Himalayas. New jobs are stored as pending and are hidden from students until you approve them.</p>
+        <p class="muted">Fetch a small batch of remote jobs from Himalayas. New jobs are stored as pending and are hidden from users until you approve them.</p>
 
         <form method="POST" action="{{ route('admin.opportunities.fetch') }}">
             @csrf
@@ -127,7 +127,7 @@
                                 </form>
                             @endif
                             <a href="{{ route('admin.opportunities.edit', $opportunity) }}">Edit</a>
-                            <form class="inline-form" method="POST" action="{{ route('admin.opportunities.destroy', $opportunity) }}" onsubmit="return confirm('Delete this opportunity?');">
+                            <form class="inline-form" method="POST" action="{{ route('admin.opportunities.destroy', $opportunity) }}" data-pf-confirm="Delete this opportunity?">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-danger" type="submit">Delete</button>

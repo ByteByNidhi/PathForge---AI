@@ -6,8 +6,9 @@
 @section('lede', 'Select a roadmap to save it to your profile, then open it to complete steps.')
 
 @section('content')
+    <div class="pf-roadmap-grid">
     @forelse ($paths as $path)
-        <article class="pf-card path" style="margin-bottom:14px;">
+        <article class="pf-card path">
             @if ((int) $selectedPathId === (int) $path->id)
                 <div class="selected">Your selected roadmap</div>
             @endif
@@ -26,4 +27,5 @@
     @empty
         <p>No roadmaps are available yet.</p>
     @endforelse
+    </div>
 @endsection

@@ -9,7 +9,7 @@
     <div class="pf-studio">
         <aside class="pf-card">
             <dl class="context">
-                <dt>Student</dt>
+                <dt>User</dt>
                 <dd>{{ $user->name }} · Level {{ $user->level ?? 1 }} · {{ $user->xp ?? 0 }} XP</dd>
                 <dt>Career path</dt>
                 <dd>{{ $pathName ?? 'No roadmap selected yet' }}</dd>

@@ -13,8 +13,22 @@ class RoadmapStep extends Model
         'path_id',
         'step_no',
         'title',
+        'description',
         'xp_reward',
+        'is_published',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_published' => 'boolean',
+        ];
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('is_published', true);
+    }
 
     public function learningPath(): BelongsTo
     {

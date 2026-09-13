@@ -9,7 +9,7 @@
     </form>
 @endif
 @if ($isOwner && $opportunity->isDraft())
-    <form class="inline-form" method="POST" action="{{ route('organization.opportunities.destroy', $opportunity) }}" onsubmit="return confirm('Delete this draft?');">
+    <form class="inline-form" method="POST" action="{{ route('organization.opportunities.destroy', $opportunity) }}" data-pf-confirm="Delete this draft?">
         @csrf
         @method('DELETE')
         <button class="btn btn-danger" type="submit">Delete</button>
