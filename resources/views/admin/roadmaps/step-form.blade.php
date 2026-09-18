@@ -29,9 +29,27 @@
         </div>
 
         <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="4">{{ old('description', $step->description) }}</textarea>
+            @error('description') <div class="error">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="field">
             <label for="xp_reward">XP reward</label>
             <input id="xp_reward" type="number" min="0" name="xp_reward" value="{{ old('xp_reward', $step->xp_reward) }}" required>
             @error('xp_reward') <div class="error">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="field">
+            <label for="skill_ids">Associated skills</label>
+            <select id="skill_ids" name="skill_ids[]" multiple size="8">
+                @foreach ($catalogSkills as $skill)
+                    <option value="{{ $skill->id }}" @selected(in_array((int) $skill->id, array_map('intval', old('skill_ids', $selectedSkillIds)), true))>{{ $skill->name }}</option>
+                @endforeach
+            </select>
+            <p class="muted">Hold Ctrl or Cmd to select multiple. Leave empty to keep sequential unlocking only.</p>
+            @error('skill_ids') <div class="error">{{ $message }}</div> @enderror
+            @error('skill_ids.*') <div class="error">{{ $message }}</div> @enderror
         </div>
 
         <button class="btn" type="submit">{{ $step->exists ? 'Save changes' : 'Add step' }}</button>

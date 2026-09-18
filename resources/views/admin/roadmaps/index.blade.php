@@ -4,7 +4,11 @@
 
 @section('content')
     <h2>Career paths</h2>
-    <p>Open a path to view curated steps or generate an AI draft. Users only see published steps.</p>
+    <p>Open a path to view curated steps or generate an AI draft. Users only see published paths and published steps.</p>
+
+    <div class="actions">
+        <a class="btn" href="{{ route('admin.roadmaps.create') }}">Create New Path</a>
+    </div>
 
     @if ($paths->isEmpty())
         <p class="muted">No career paths found.</p>
@@ -24,6 +28,9 @@
                     <tr>
                         <td>
                             <strong>{{ $path->path_name }}</strong>
+                            @if (! $path->is_published)
+                                <span class="badge">Draft</span>
+                            @endif
                             @if ($path->description)
                                 <div class="muted">{{ $path->description }}</div>
                             @endif

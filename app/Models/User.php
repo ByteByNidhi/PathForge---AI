@@ -189,9 +189,55 @@ class User extends Authenticatable
             return false;
         }
 
-        $available = $this->availableRoadmapStep($step->learningPath);
+        $path = $step->learningPath;
+        $completedIds = $this->completedRoadmapStepIds($path);
 
-        return $available !== null && (int) $available->id === (int) $step->id;
+        if ($completedIds->contains($step->id)) {
+            return true;
+        }
+
+        $available = $this->availableRoadmapStep($path);
+
+        if ($available !== null && (int) $available->id === (int) $step->id) {
+            return true;
+        }
+
+        return $this->skillUnlocksRoadmapStep($step);
+    }
+
+    /**
+     * A later step is available (not auto-completed) when the student already
+     * has every skill associated with that step on their selected path.
+     */
+    public function skillUnlocksRoadmapStep(RoadmapStep $step): bool
+    {
+        if ((int) $this->path_id !== (int) $step->path_id) {
+            return false;
+        }
+
+        $step->loadMissing('skills');
+
+        if ($step->skills->isEmpty()) {
+            return false;
+        }
+
+        $userSkillIds = $this->userSkillIds();
+
+        return $step->skills->every(
+            fn (Skill $skill) => $userSkillIds->contains((int) $skill->id)
+        );
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, int>
+     */
+    private function userSkillIds()
+    {
+        if ($this->relationLoaded('skills')) {
+            return $this->skills->pluck('id')->map(fn ($id) => (int) $id);
+        }
+
+        return $this->skills()->pluck('skills.id')->map(fn ($id) => (int) $id);
     }
 
     /**

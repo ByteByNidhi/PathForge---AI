@@ -8,6 +8,7 @@ use App\Models\Skill;
 use App\Services\AchievementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class OnboardingController extends Controller
@@ -19,6 +20,7 @@ class OnboardingController extends Controller
         }
 
         $paths = LearningPath::query()
+            ->availableToStudents()
             ->orderBy('path_name')
             ->get();
 
@@ -48,11 +50,18 @@ class OnboardingController extends Controller
                     ->withErrors(['requested_path' => 'Tell us which other career path you are interested in.']);
             }
 
-            CareerPathRequest::query()->create([
-                'user_id' => $request->user()->id,
-                'requested_path' => $requested,
-                'status' => CareerPathRequest::STATUS_PENDING,
-            ]);
+            $alreadyPending = CareerPathRequest::query()
+                ->where('user_id', $request->user()->id)
+                ->where('status', CareerPathRequest::STATUS_PENDING)
+                ->exists();
+
+            if (! $alreadyPending) {
+                CareerPathRequest::query()->create([
+                    'user_id' => $request->user()->id,
+                    'requested_path' => $requested,
+                    'status' => CareerPathRequest::STATUS_PENDING,
+                ]);
+            }
 
             $user = $request->user();
             $user->path_id = null;
@@ -70,11 +79,16 @@ class OnboardingController extends Controller
 
             return redirect()
                 ->route('dashboard')
-                ->with('success', "Thanks! We've noted your career interest. This path may be added in a future PathForge update.");
+                ->with('success', 'Your career path request has been submitted. We\'ll let you know when it becomes available.')
+                ->with('career_path_request_submitted', true);
         }
 
         $validated = $request->validate([
-            'path_id' => ['required', 'integer', 'exists:learning_paths,id'],
+            'path_id' => [
+                'required',
+                'integer',
+                Rule::exists('learning_paths', 'id')->where('is_published', true),
+            ],
         ]);
 
         $pathId = (int) $validated['path_id'];
@@ -270,7 +284,7 @@ class OnboardingController extends Controller
             return null;
         }
 
-        return LearningPath::query()->find($pathId);
+        return LearningPath::query()->availableToStudents()->find($pathId);
     }
 
     private function startingAs(Request $request): ?string

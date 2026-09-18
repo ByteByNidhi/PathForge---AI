@@ -35,7 +35,7 @@ class ProfileController extends Controller
                 ->withInput();
         }
 
-        $user->skills()->attach($skill->id);
+        $user->skills()->syncWithoutDetaching([$skill->id]);
         app(AchievementService::class)->checkAndUnlock($user);
 
         return back()->with('success', 'Skill added.');

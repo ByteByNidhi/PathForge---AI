@@ -1172,3 +1172,100 @@ th {
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Staff panels: native/light form controls must keep readable dark text. */
+body.pf-staff {
+    --pf-staff-control-bg: #ffffff;
+    --pf-staff-control-text: #122018;
+    --pf-staff-placeholder: #5f6d66;
+    --pf-staff-disabled-bg: #e7ece9;
+    --pf-staff-disabled-text: #5c675f;
+}
+
+body.pf-staff .pf-input,
+body.pf-staff .pf-select,
+body.pf-staff .pf-textarea,
+body.pf-staff input[type="text"],
+body.pf-staff input[type="email"],
+body.pf-staff input[type="password"],
+body.pf-staff input[type="url"],
+body.pf-staff input[type="date"],
+body.pf-staff input[type="datetime-local"],
+body.pf-staff input[type="time"],
+body.pf-staff input[type="month"],
+body.pf-staff input[type="week"],
+body.pf-staff input[type="number"],
+body.pf-staff input[type="search"],
+body.pf-staff input[type="tel"],
+body.pf-staff input:not([type]),
+body.pf-staff select,
+body.pf-staff textarea {
+    background-color: var(--pf-staff-control-bg);
+    color: var(--pf-staff-control-text);
+    color-scheme: light;
+}
+
+body.pf-staff input::placeholder,
+body.pf-staff textarea::placeholder {
+    color: var(--pf-staff-placeholder);
+    opacity: 1;
+}
+
+body.pf-staff select option,
+body.pf-staff select optgroup,
+body.pf-staff .pf-select option,
+body.pf-staff .pf-select optgroup {
+    background-color: #ffffff;
+    color: var(--pf-staff-control-text);
+}
+
+body.pf-staff input:disabled,
+body.pf-staff textarea:disabled,
+body.pf-staff select:disabled {
+    background-color: var(--pf-staff-disabled-bg);
+    color: var(--pf-staff-disabled-text);
+    cursor: not-allowed;
+}
+
+body.pf-staff input:focus,
+body.pf-staff select:focus,
+body.pf-staff textarea:focus {
+    border-color: #3d8f6a;
+    box-shadow: 0 0 0 3px rgba(61, 143, 106, 0.28);
+    color: var(--pf-staff-control-text);
+}
+
+body.pf-staff .choices .choices__inner,
+body.pf-staff .choices[data-type*="select-one"] .choices__inner,
+body.pf-staff .choices[data-type*="select-multiple"] .choices__inner,
+body.pf-staff .choices[data-type*="text"] .choices__inner {
+    background-color: var(--pf-staff-control-bg);
+    color: var(--pf-staff-control-text);
+}
+
+body.pf-staff .choices .choices__input,
+body.pf-staff .choices[data-type*="select-one"] .choices__input {
+    background-color: #ffffff;
+    color: var(--pf-staff-control-text);
+}
+
+body.pf-staff .choices .choices__input::placeholder {
+    color: var(--pf-staff-placeholder);
+}
+
+body.pf-staff .choices .choices__list--dropdown,
+body.pf-staff .choices .choices__list[aria-expanded] {
+    background-color: #ffffff;
+}
+
+body.pf-staff .choices .choices__list--dropdown .choices__item,
+body.pf-staff .choices .choices__list[aria-expanded] .choices__item {
+    color: var(--pf-staff-control-text);
+}
+
+body.pf-staff .pf-modal__dialog input,
+body.pf-staff .pf-modal__dialog textarea,
+body.pf-staff .pf-modal__dialog select {
+    background-color: var(--pf-staff-control-bg);
+    color: var(--pf-staff-control-text);
+}

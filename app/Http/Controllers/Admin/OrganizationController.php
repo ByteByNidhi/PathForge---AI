@@ -37,9 +37,16 @@ class OrganizationController extends Controller
             'phone' => ['nullable', 'string', 'max:50'],
             'website' => ['nullable', 'url', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'owner_name' => ['required', 'string', 'max:255'],
+            'owner_name' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[A-Za-z]+(?: [A-Za-z]+)*$/',
+            ],
             'owner_email' => ['required', 'email', 'unique:users,email'],
             'owner_password' => ['required', 'string', 'min:8'],
+        ], [
+            'owner_name.regex' => 'Use letters only, with spaces between words. Numbers and symbols are not allowed.',
         ]);
 
         $organization = Organization::query()->create([

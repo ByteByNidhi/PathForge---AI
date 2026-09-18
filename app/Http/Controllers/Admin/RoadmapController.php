@@ -6,9 +6,12 @@ use App\Exceptions\RoadmapGenerationException;
 use App\Http\Controllers\Controller;
 use App\Models\LearningPath;
 use App\Models\RoadmapStep;
+use App\Models\Skill;
 use App\Services\RoadmapGenerationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class RoadmapController extends Controller
@@ -29,6 +32,30 @@ class RoadmapController extends Controller
         ]);
     }
 
+    public function create(): View
+    {
+        return view('admin.roadmaps.create', [
+            'path' => new LearningPath,
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $this->validatedPath($request);
+
+        $path = LearningPath::query()->create([
+            'path_name' => $validated['path_name'],
+            'description' => $validated['description'] ?? null,
+            'icon' => $validated['icon'] ?? null,
+            'roadmap_source' => LearningPath::SOURCE_CURATED,
+            'is_published' => false,
+        ]);
+
+        return redirect()
+            ->route('admin.roadmaps.show', $path)
+            ->with('success', 'Draft career path created. Add steps manually or generate an AI draft, then publish before students can see it.');
+    }
+
     public function show(LearningPath $learningPath): View
     {
         $steps = $learningPath->publishedRoadmapSteps()
@@ -38,6 +65,7 @@ class RoadmapController extends Controller
             ->get();
 
         $draftSteps = $learningPath->draftRoadmapSteps()
+            ->with('skills')
             ->orderBy('step_no')
             ->orderBy('id')
             ->get();
@@ -92,21 +120,39 @@ class RoadmapController extends Controller
     public function publish(LearningPath $learningPath, RoadmapGenerationService $generator): RedirectResponse
     {
         try {
-            $generator->publishDraft($learningPath);
+            if ($learningPath->draftRoadmapSteps()->exists() && $this->hasAiDraftMetadata($learningPath)) {
+                $generator->publishDraft($learningPath);
+            } elseif ($learningPath->draftRoadmapSteps()->exists()) {
+                $this->publishManualDrafts($learningPath);
+            }
+
+            $learningPath->refresh();
+
+            if ($learningPath->publishedRoadmapSteps()->doesntExist()) {
+                return redirect()
+                    ->route('admin.roadmaps.show', $learningPath)
+                    ->with('error', 'Add or generate roadmap steps before publishing this path.');
+            }
+
+            $learningPath->forceFill(['is_published' => true])->save();
         } catch (RoadmapGenerationException $e) {
+            $fallback = $learningPath->hasAiDraft()
+                ? route('admin.roadmaps.preview', $learningPath)
+                : route('admin.roadmaps.show', $learningPath);
+
             return redirect()
-                ->route('admin.roadmaps.preview', $learningPath)
+                ->to($fallback)
                 ->with('error', $e->getMessage());
         }
 
         return redirect()
             ->route('admin.roadmaps.show', $learningPath)
-            ->with('success', 'AI roadmap published. Users can now see these steps.');
+            ->with('success', 'Career path published. Students can now see and select it.');
     }
 
     public function createStep(LearningPath $learningPath): View
     {
-        $nextStepNo = ((int) $learningPath->publishedRoadmapSteps()->max('step_no')) + 1;
+        $nextStepNo = ((int) $learningPath->roadmapSteps()->max('step_no')) + 1;
 
         return view('admin.roadmaps.step-form', [
             'path' => $learningPath,
@@ -114,20 +160,28 @@ class RoadmapController extends Controller
                 'step_no' => $nextStepNo,
                 'xp_reward' => 10,
             ]),
+            'catalogSkills' => $this->catalogSkills(),
+            'selectedSkillIds' => [],
         ]);
     }
 
     public function storeStep(Request $request, LearningPath $learningPath): RedirectResponse
     {
         $validated = $this->validatedStep($request);
-        $validated['path_id'] = $learningPath->id;
-        $validated['is_published'] = true;
+        $skillIds = $this->uniqueSkillIds($validated['skill_ids'] ?? []);
+        unset($validated['skill_ids']);
 
-        RoadmapStep::query()->create($validated);
+        $validated['path_id'] = $learningPath->id;
+        $validated['is_published'] = $learningPath->isAvailableToStudents();
+
+        $step = RoadmapStep::query()->create($validated);
+        $step->skills()->sync($skillIds);
 
         return redirect()
             ->route('admin.roadmaps.show', $learningPath)
-            ->with('success', 'Roadmap step added.');
+            ->with('success', $validated['is_published']
+                ? 'Roadmap step added.'
+                : 'Draft roadmap step added. Publish the path when it is ready for students.');
     }
 
     public function editStep(LearningPath $learningPath, RoadmapStep $roadmapStep): View
@@ -136,7 +190,9 @@ class RoadmapController extends Controller
 
         return view('admin.roadmaps.step-form', [
             'path' => $learningPath,
-            'step' => $roadmapStep,
+            'step' => $roadmapStep->load('skills'),
+            'catalogSkills' => $this->catalogSkills(),
+            'selectedSkillIds' => $roadmapStep->skills->pluck('id')->all(),
         ]);
     }
 
@@ -144,10 +200,21 @@ class RoadmapController extends Controller
     {
         $this->assertStepBelongsToPath($learningPath, $roadmapStep);
 
-        $roadmapStep->update($this->validatedStep($request));
+        $validated = $this->validatedStep($request);
+        $skillIds = $this->uniqueSkillIds($validated['skill_ids'] ?? []);
+        unset($validated['skill_ids']);
+
+        $roadmapStep->update($validated);
+        $roadmapStep->skills()->sync($skillIds);
+
+        $destination = $roadmapStep->is_published
+            ? route('admin.roadmaps.show', $learningPath)
+            : ($learningPath->hasAiDraft()
+                ? route('admin.roadmaps.preview', $learningPath)
+                : route('admin.roadmaps.show', $learningPath));
 
         return redirect()
-            ->route('admin.roadmaps.show', $learningPath)
+            ->to($destination)
             ->with('success', 'Roadmap step updated.');
     }
 
@@ -155,6 +222,7 @@ class RoadmapController extends Controller
     {
         $this->assertStepBelongsToPath($learningPath, $roadmapStep);
 
+        $roadmapStep->skills()->detach();
         $roadmapStep->delete();
 
         return redirect()
@@ -165,13 +233,89 @@ class RoadmapController extends Controller
     /**
      * @return array<string, mixed>
      */
+    private function validatedPath(Request $request): array
+    {
+        $name = trim((string) $request->input('path_name', ''));
+        $request->merge(['path_name' => $name]);
+
+        $validated = $request->validate([
+            'path_name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:120',
+                Rule::unique('learning_paths', 'path_name'),
+            ],
+            'description' => ['nullable', 'string', 'max:5000'],
+            'icon' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        $validated['path_name'] = trim($validated['path_name']);
+        $validated['description'] = isset($validated['description'])
+            ? (trim($validated['description']) !== '' ? trim($validated['description']) : null)
+            : null;
+        $validated['icon'] = isset($validated['icon'])
+            ? (trim($validated['icon']) !== '' ? trim($validated['icon']) : null)
+            : null;
+
+        $duplicate = LearningPath::query()
+            ->whereRaw('LOWER(path_name) = ?', [mb_strtolower($validated['path_name'])])
+            ->exists();
+
+        if ($duplicate) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'path_name' => 'A career path with this name already exists.',
+            ]);
+        }
+
+        return $validated;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     private function validatedStep(Request $request): array
     {
         return $request->validate([
             'step_no' => ['required', 'integer', 'min:1'],
             'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:5000'],
             'xp_reward' => ['required', 'integer', 'min:0'],
+            'skill_ids' => ['nullable', 'array'],
+            'skill_ids.*' => ['integer', 'exists:skills,id'],
         ]);
+    }
+
+    /**
+     * @param  list<mixed>  $skillIds
+     * @return list<int>
+     */
+    private function uniqueSkillIds(array $skillIds): array
+    {
+        return array_values(array_unique(array_map('intval', $skillIds)));
+    }
+
+    private function catalogSkills()
+    {
+        return Skill::query()
+            ->where('name', 'not like', 'achv-skill-%')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function hasAiDraftMetadata(LearningPath $path): bool
+    {
+        return filled($path->roadmap_draft_title) || $path->roadmap_generated_at !== null;
+    }
+
+    private function publishManualDrafts(LearningPath $path): void
+    {
+        DB::transaction(function () use ($path) {
+            foreach ($path->draftRoadmapSteps()->orderBy('step_no')->orderBy('id')->get() as $step) {
+                $step->is_published = true;
+                $step->save();
+            }
+        });
     }
 
     private function assertStepBelongsToPath(LearningPath $learningPath, RoadmapStep $roadmapStep): void

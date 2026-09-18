@@ -186,7 +186,23 @@ class WfsPolishPassTest extends TestCase
         $this->actingAs($user)
             ->get('/dashboard')
             ->assertOk()
-            ->assertSee('noted your career interest');
+            ->assertSee('Career path request submitted')
+            ->assertSee('has been submitted')
+            ->assertSee('pending review')
+            ->assertSee('Opportunity Hub');
+
+        $this->actingAs($user)
+            ->post('/onboarding/path', [
+                'path_id' => 'other',
+                'requested_path' => 'PF Test Quantum Baking',
+            ])
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertSame(1, CareerPathRequest::query()->where('user_id', $user->id)->count());
+        $this->assertSame(
+            'PF Test Machine Learning',
+            CareerPathRequest::query()->where('user_id', $user->id)->value('requested_path')
+        );
     }
 
     public function test_career_path_request_appears_in_admin(): void

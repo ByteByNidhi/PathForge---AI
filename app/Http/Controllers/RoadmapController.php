@@ -15,6 +15,7 @@ class RoadmapController extends Controller
     public function index(): View
     {
         $paths = LearningPath::query()
+            ->availableToStudents()
             ->orderBy('path_name')
             ->get();
 
@@ -26,6 +27,10 @@ class RoadmapController extends Controller
 
     public function select(LearningPath $learningPath): RedirectResponse
     {
+        if (! $learningPath->isAvailableToStudents()) {
+            abort(404);
+        }
+
         $user = auth()->user();
         $user->path_id = $learningPath->id;
         $user->save();
@@ -37,13 +42,17 @@ class RoadmapController extends Controller
 
     public function show(LearningPath $learningPath): View
     {
+        if (! $learningPath->isAvailableToStudents()) {
+            abort(404);
+        }
+
         $steps = $learningPath->publishedRoadmapSteps()
             ->with('skills')
             ->orderBy('step_no')
             ->orderBy('id')
             ->get();
 
-        $user = auth()->user();
+        $user = auth()->user()->loadMissing('skills');
         $isSelected = (int) $user->path_id === (int) $learningPath->id;
 
         $progressByStepId = $user
@@ -52,20 +61,28 @@ class RoadmapController extends Controller
             ->get()
             ->keyBy('roadmap_step_id');
 
-        $availableStep = $isSelected ? $user->availableRoadmapStep($learningPath) : null;
+        $completableStepIds = $isSelected
+            ? $steps
+                ->filter(fn (RoadmapStep $step) => $user->canCompleteRoadmapStep($step))
+                ->pluck('id')
+            : collect();
 
         return view('roadmaps.show', [
             'path' => $learningPath,
             'steps' => $steps,
             'progressByStepId' => $progressByStepId,
             'isSelected' => $isSelected,
-            'availableStepId' => $availableStep?->id,
+            'completableStepIds' => $completableStepIds,
         ]);
     }
 
     public function complete(Request $request, LearningPath $learningPath, RoadmapStep $roadmapStep): RedirectResponse
     {
         if ((int) $roadmapStep->path_id !== (int) $learningPath->id || ! $roadmapStep->is_published) {
+            abort(404);
+        }
+
+        if (! $learningPath->isAvailableToStudents()) {
             abort(404);
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CareerPathRequest;
 use App\Models\Opportunity;
 use App\Services\AchievementService;
 use Illuminate\View\View;
@@ -12,6 +13,10 @@ class DashboardController extends Controller
     {
         $user = auth()->user()->load(['skills', 'learningPath']);
         $path = $user->learningPath;
+        $pendingCareerPathRequest = $user->careerPathRequests()
+            ->where('status', CareerPathRequest::STATUS_PENDING)
+            ->latest()
+            ->first();
 
         $totalSteps = 0;
         $completedSteps = 0;
@@ -76,6 +81,7 @@ class DashboardController extends Controller
             'recommendedOpportunities' => $recommendedOpportunities,
             'recentCompletions' => $recentCompletions,
             'xpIntoLevel' => $user->xpIntoLevel(),
+            'pendingCareerPathRequest' => $pendingCareerPathRequest,
         ]);
     }
 }

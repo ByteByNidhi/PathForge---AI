@@ -104,6 +104,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/opportunities/{opportunity}', [AdminOpportunityController::class, 'destroy'])->name('opportunities.destroy');
 
     Route::get('/roadmaps', [AdminRoadmapController::class, 'index'])->name('roadmaps.index');
+    Route::get('/roadmaps/create', [AdminRoadmapController::class, 'create'])->name('roadmaps.create');
+    Route::post('/roadmaps', [AdminRoadmapController::class, 'store'])->name('roadmaps.store');
     Route::get('/roadmaps/{learningPath}', [AdminRoadmapController::class, 'show'])->name('roadmaps.show');
     Route::post('/roadmaps/{learningPath}/generate', [AdminRoadmapController::class, 'generate'])->name('roadmaps.generate');
     Route::get('/roadmaps/{learningPath}/preview', [AdminRoadmapController::class, 'preview'])->name('roadmaps.preview');

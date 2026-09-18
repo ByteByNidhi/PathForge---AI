@@ -6,6 +6,18 @@
 @section('lede', 'Your career state, next milestone, and the work that moves you forward.')
 
 @section('content')
+    @if ($pendingCareerPathRequest)
+        <section class="pf-card pf-flash" style="margin-bottom:18px;">
+            <h2 style="margin-top:0;">Career path request submitted</h2>
+            <p>Your career path request for <strong>{{ $pendingCareerPathRequest->requested_path }}</strong> has been submitted.</p>
+            <p>We'll let you know when it becomes available. It is pending review and is not available to start yet.</p>
+            <p class="muted">You can keep exploring PathForge while we review it.</p>
+            <div class="actions">
+                <a class="btn" href="{{ route('opportunities.index') }}">Browse Opportunity Hub</a>
+                <a class="btn btn-secondary" href="{{ route('roadmaps.index') }}">Explore existing roadmaps</a>
+            </div>
+        </section>
+    @endif
     <div class="pf-dash">
         <section class="pf-card pf-card--hero pf-card--glow pf-span-2">
             <div>

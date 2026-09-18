@@ -68,7 +68,7 @@ class OnboardingTest extends TestCase
     {
         $user = User::factory()->needsOnboarding()->create();
 
-        $paths = LearningPath::query()->orderBy('path_name')->pluck('path_name');
+        $paths = LearningPath::query()->availableToStudents()->orderBy('path_name')->pluck('path_name');
         $this->assertCount(7, $paths);
 
         $response = $this->actingAs($user)

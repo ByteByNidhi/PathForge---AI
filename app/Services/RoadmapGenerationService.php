@@ -116,6 +116,7 @@ class RoadmapGenerationService
                 'roadmap_generated_at' => now(),
                 'roadmap_draft_title' => null,
                 'roadmap_draft_description' => null,
+                'is_published' => true,
             ])->save();
         });
 

@@ -20,13 +20,25 @@ class LearningPath extends Model
         'roadmap_generated_at',
         'roadmap_draft_title',
         'roadmap_draft_description',
+        'is_published',
     ];
 
     protected function casts(): array
     {
         return [
             'roadmap_generated_at' => 'datetime',
+            'is_published' => 'boolean',
         ];
+    }
+
+    public function scopeAvailableToStudents($query)
+    {
+        return $query->where('is_published', true);
+    }
+
+    public function isAvailableToStudents(): bool
+    {
+        return (bool) $this->is_published;
     }
 
     public function roadmapSteps(): HasMany

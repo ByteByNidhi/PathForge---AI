@@ -36,7 +36,7 @@
             @endif
             @if ($completed)
                 <p class="done">Completed</p>
-            @elseif ($isSelected && (int) $availableStepId === (int) $step->id)
+            @elseif ($isSelected && $completableStepIds->contains($step->id))
                 <form method="POST" action="{{ route('roadmaps.complete', [$path, $step]) }}">
                     @csrf
                     <button class="btn" type="submit">Mark complete</button>

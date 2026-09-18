@@ -35,6 +35,7 @@
                 <th>Description</th>
                 <th>XP</th>
                 <th>Skills</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -45,6 +46,14 @@
                     <td>{{ $step->description }}</td>
                     <td>{{ $step->xp_reward }}</td>
                     <td>{{ $step->skills->pluck('name')->implode(', ') }}</td>
+                    <td>
+                        <a href="{{ route('admin.roadmaps.steps.edit', [$path, $step]) }}">Edit</a>
+                        <form class="inline-form" method="POST" action="{{ route('admin.roadmaps.steps.destroy', [$path, $step]) }}" data-pf-confirm="Delete this draft step?">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-danger" type="submit">Delete</button>
+                        </form>
+                    </td>
                 </tr>
             @endforeach
         </tbody>

@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="{{ asset('css/pathforge.css') }}">
 </head>
 
-<body class="pf-body">
+<body class="pf-body pf-staff">
     @include('partials.atmosphere', ['density' => 'calm'])
     <div class="pf-app">
         <aside class="pf-sidebar">
